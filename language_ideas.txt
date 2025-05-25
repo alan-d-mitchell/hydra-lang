@@ -1,0 +1,141 @@
+Hydra Language
+
+TYPES:
+
+int + int[]
+string + string[]
+char + char[]
+float + float[]
+boolean + boolean[]
+void
+null
+//: comment
+/* */: multi line commment
+global -> assigns a global variable
+const -> sets a variable to immutable
+
+KEYWORDS:
+
+import
+if
+else if
+else
+in
+break
+return
+skip: works like continue
+break if: this works like instead of if (condition) break -> break if (condition)
+func
+while
+for
+forEach: maybe? -> would only be able to be used on array types, would kinda work like hashmap; see SYNTAX
+->: not a keyword but just the arrow token used to determine function return type
+
+ARITHMETIC:
+
+< + <=: less than or equal to
+> + >: greater than or equal to
+=: assignment
+==: equality
+++: increment
+--: decrement
++=: reassignment addition
+-=: subtraction reassignment
+*=: multiplicative reassignment
+/=: division reassignment
++: addition
+-: subtraction
+*: multiply
+/: divide
+**: power
+
+LOGICAL OPERATORS:
+	&&: and
+	||: or
+	!: not
+	!=: not equal to
+
+SYNTAX:
+
+variable declaration:
+
+int var = 10;
+float number = 2.5;
+char[] characters = {'a', 'b', 'c'};
+
+control flow:
+
+for (int i = 0; i <= var; i++) {
+	while (i < var) {
+		if (i == 7) {
+			skip;
+		}
+		
+		break if (i == 9);
+	}
+}
+
+forEach (char c in characters) {
+	stdout(c);
+}
+
+function declaration:
+	func add(int a, int b) -> int {
+		return a + b;
+	}
+
+syntaxual sugar:
+	every program needs a main entry point delimited by:
+		
+		func main() -> void {
+		}
+
+	all functions need a return type defined by the token following the arrow (->) token
+
+STANDARD LIBRARY:
+
+	stdout: print equivalent
+
+	arrays will be immutable once size is defined
+	size must be defined when declaring
+	none of that: int[] arr;
+	you can set each element to null if you dont know what you want to put there and then intialize it later but it cant be empty
+	so: int[] arr = {null, null, null, null, null};
+		
+		for (int i = 0; i < arr.length(); i++) {
+			arr[i] = i;
+		}
+
+	array operations:
+		.length()
+		.toString()
+		
+		indexing -> arr[0]
+	
+	string ops:
+		.length() -> because strings are just char arrays
+		.upperCase()
+		.lowerCase()
+		.equals()
+		
+		interpolation would be included with stdout like:
+			int num = 10;
+			stdout("%d\n", num);
+		
+		NO CONCATENATION
+	
+	globals must be defined at the top before any functions and after any imports if used
+	globals are accessible by any function without the need to pass as parameter
+
+	can have a variable like: global const int HEALTH = 100;
+	
+	null is assignable to any NON primitive type -> only strings rn and when i get other modules like maps and array lists
+	null == null evals to true
+
+	no function overloading for now
+
+func main() -> void {
+	// code
+}
+
+must be present this is the main entry point
