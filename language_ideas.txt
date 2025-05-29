@@ -203,7 +203,6 @@ STANDARD LIBRARY:
 
 	array operations:
 		.len() -> to differentiate easier between string length and arr len
-		.toString()
 		
 		indexing -> arr[0]
 

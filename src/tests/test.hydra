@@ -1,19 +1,36 @@
 
-func test() -> void {
+global const int NUMBER = 10;
+
+/* func test() -> void {
     char[] hello = {'H', 'e', 'l', 'l', 'o', ' '}; // initialization of char array
     char[] world = {'W', 'o', 'r', 'l', 'd', '!'}; // initialization of char array
 
     forEach (char c in hello) { // forEach loop to iterate over each element in the hello array
-        if (c is in world) { 
-            // if check to see if the character on current iteration is an element in the world array
+        if (c is in world) { // if check to see if the character on current iteration is an element in the world array
             skip; // skip print if true
         }
 
-        stdout("%c", c); print c
+        stdout("%c", c); // print c
     }
     stdout(); // print new line
+} */
+
+/* func test_const() -> void {
+    const string name = "Alan";
+
+    stdout(name);
+} */
+
+func fibonacci(int n) -> int {
+    if (n == 0) {
+        return 0;
+    }
+
+    return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
 func main() -> void {
-    stdout(test());
+    int pos = fibonacci(NUMBER);
+
+    stdout("%d\n", pos);
 }

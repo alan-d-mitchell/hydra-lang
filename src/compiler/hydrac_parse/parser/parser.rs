@@ -449,7 +449,7 @@ impl Parser {
     }
     
     fn parse_equality(&mut self) -> Result<Expression, String> {
-        let mut expr = self.parse_comparison()?;
+        let mut expr = self.parse_is_in()?;
         
         while self.match_any(&[TokenType::Equal, TokenType::NotEqual]) {
             let operator = match self.previous().token_type {
@@ -457,12 +457,34 @@ impl Parser {
                 TokenType::NotEqual => BinaryOperator::NotEqual,
                 _ => unreachable!(),
             };
-            let right = self.parse_comparison()?;
+            let right = self.parse_is_in()?;
             expr = Expression::Binary(BinaryExpr {
                 left: Box::new(expr),
                 operator,
                 right: Box::new(right),
             });
+        }
+        
+        Ok(expr)
+    }
+    
+    // NEW: Handle "is in" expressions
+    fn parse_is_in(&mut self) -> Result<Expression, String> {
+        let mut expr = self.parse_comparison()?;
+        
+        // Handle "is in" construct
+        while self.check(&TokenType::Is) {
+            self.advance(); // consume 'is'
+            if self.check(&TokenType::In) {
+                self.advance(); // consume 'in'
+                let right = self.parse_comparison()?;
+                expr = Expression::IsIn(IsInExpr {
+                    value: Box::new(expr),
+                    collection: Box::new(right),
+                });
+            } else {
+                return Err(format!("Expected 'in' after 'is' at line {}", self.peek().line));
+            }
         }
         
         Ok(expr)
