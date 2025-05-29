@@ -1,0 +1,21 @@
+global int undefinedVar = unknownVariable; // Error: unknownVariable not defined
+
+func testFunction() -> int {
+    int x = 5;
+    int x = 10; // Error: x already declared in this scope
+    
+    return y; // Error: y not defined
+}
+
+func anotherFunction() -> void {
+    return 42; // Error: void function cannot return value
+}
+
+func main() -> void {
+    undefinedFunction(); // Error: function not defined
+    
+    break; // Error: break outside of loop
+    skip;  // Error: skip outside of loop
+    
+    testFunction(5); // Error: function takes no parameters
+}

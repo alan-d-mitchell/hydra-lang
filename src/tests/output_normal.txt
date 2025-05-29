@@ -1,0 +1,602 @@
+=== HYDRA LANGUAGE COMPILER ===
+Compiling file: src/tests/normal.hydra
+File size: 592 bytes
+
+=== PHASE 1: LEXICAL ANALYSIS (TOKENIZING) ===
+✅ Tokenization successful!
+Tokens found: 181
+
+Debug: All tokens:
+    0: Token { token_type: Newline, lexeme: "\n", line: 1, column: 2 }
+    1: Token { token_type: Global, lexeme: "global", line: 2, column: 0 }
+    2: Token { token_type: Const, lexeme: "const", line: 2, column: 7 }
+    3: Token { token_type: IntType, lexeme: "int", line: 2, column: 13 }
+    4: Token { token_type: Identifier("MAX_SIZE"), lexeme: "MAX_SIZE", line: 2, column: 17 }
+    5: Token { token_type: Assign, lexeme: "=", line: 2, column: 26 }
+    6: Token { token_type: IntLiteral(100), lexeme: "100", line: 2, column: 28 }
+    7: Token { token_type: Semicolon, lexeme: ";", line: 2, column: 31 }
+    8: Token { token_type: Newline, lexeme: "\n", line: 2, column: 33 }
+    9: Token { token_type: Global, lexeme: "global", line: 3, column: 0 }
+   10: Token { token_type: StringType, lexeme: "string", line: 3, column: 7 }
+   11: Token { token_type: Identifier("message"), lexeme: "message", line: 3, column: 14 }
+   12: Token { token_type: Assign, lexeme: "=", line: 3, column: 22 }
+   13: Token { token_type: StringLiteral("Hello Hydra!"), lexeme: "\"Hello Hydra!\"", line: 3, column: 24 }
+   14: Token { token_type: Semicolon, lexeme: ";", line: 3, column: 38 }
+   15: Token { token_type: Newline, lexeme: "\n", line: 3, column: 40 }
+   16: Token { token_type: Newline, lexeme: "\n", line: 4, column: 1 }
+   17: Token { token_type: Func, lexeme: "func", line: 5, column: 0 }
+   18: Token { token_type: Identifier("factorial"), lexeme: "factorial", line: 5, column: 5 }
+   19: Token { token_type: LeftParen, lexeme: "(", line: 5, column: 14 }
+   20: Token { token_type: IntType, lexeme: "int", line: 5, column: 15 }
+   21: Token { token_type: Identifier("n"), lexeme: "n", line: 5, column: 19 }
+   22: Token { token_type: RightParen, lexeme: ")", line: 5, column: 20 }
+   23: Token { token_type: Arrow, lexeme: "->", line: 5, column: 22 }
+   24: Token { token_type: IntType, lexeme: "int", line: 5, column: 25 }
+   25: Token { token_type: LeftBrace, lexeme: "{", line: 5, column: 29 }
+   26: Token { token_type: Newline, lexeme: "\n", line: 5, column: 31 }
+   27: Token { token_type: If, lexeme: "if", line: 6, column: 4 }
+   28: Token { token_type: LeftParen, lexeme: "(", line: 6, column: 7 }
+   29: Token { token_type: Identifier("n"), lexeme: "n", line: 6, column: 8 }
+   30: Token { token_type: LessEqual, lexeme: "<=", line: 6, column: 10 }
+   31: Token { token_type: IntLiteral(1), lexeme: "1", line: 6, column: 13 }
+   32: Token { token_type: RightParen, lexeme: ")", line: 6, column: 14 }
+   33: Token { token_type: LeftBrace, lexeme: "{", line: 6, column: 16 }
+   34: Token { token_type: Newline, lexeme: "\n", line: 6, column: 18 }
+   35: Token { token_type: Return, lexeme: "return", line: 7, column: 8 }
+   36: Token { token_type: IntLiteral(1), lexeme: "1", line: 7, column: 15 }
+   37: Token { token_type: Semicolon, lexeme: ";", line: 7, column: 16 }
+   38: Token { token_type: Newline, lexeme: "\n", line: 7, column: 18 }
+   39: Token { token_type: RightBrace, lexeme: "}", line: 8, column: 4 }
+   40: Token { token_type: Newline, lexeme: "\n", line: 8, column: 6 }
+   41: Token { token_type: Newline, lexeme: "\n", line: 9, column: 1 }
+   42: Token { token_type: Return, lexeme: "return", line: 10, column: 4 }
+   43: Token { token_type: Identifier("n"), lexeme: "n", line: 10, column: 11 }
+   44: Token { token_type: Multiply, lexeme: "*", line: 10, column: 13 }
+   45: Token { token_type: Identifier("factorial"), lexeme: "factorial", line: 10, column: 15 }
+   46: Token { token_type: LeftParen, lexeme: "(", line: 10, column: 24 }
+   47: Token { token_type: Identifier("n"), lexeme: "n", line: 10, column: 25 }
+   48: Token { token_type: Minus, lexeme: "-", line: 10, column: 27 }
+   49: Token { token_type: IntLiteral(1), lexeme: "1", line: 10, column: 29 }
+   50: Token { token_type: RightParen, lexeme: ")", line: 10, column: 30 }
+   51: Token { token_type: Semicolon, lexeme: ";", line: 10, column: 31 }
+   52: Token { token_type: Newline, lexeme: "\n", line: 10, column: 33 }
+   53: Token { token_type: RightBrace, lexeme: "}", line: 11, column: 0 }
+   54: Token { token_type: Newline, lexeme: "\n", line: 11, column: 2 }
+   55: Token { token_type: Newline, lexeme: "\n", line: 12, column: 1 }
+   56: Token { token_type: Func, lexeme: "func", line: 13, column: 0 }
+   57: Token { token_type: Identifier("processArray"), lexeme: "processArray", line: 13, column: 5 }
+   58: Token { token_type: LeftParen, lexeme: "(", line: 13, column: 17 }
+   59: Token { token_type: IntType, lexeme: "int", line: 13, column: 18 }
+   60: Token { token_type: LeftBracket, lexeme: "[", line: 13, column: 21 }
+   61: Token { token_type: RightBracket, lexeme: "]", line: 13, column: 22 }
+   62: Token { token_type: Identifier("numbers"), lexeme: "numbers", line: 13, column: 24 }
+   63: Token { token_type: RightParen, lexeme: ")", line: 13, column: 31 }
+   64: Token { token_type: Arrow, lexeme: "->", line: 13, column: 33 }
+   65: Token { token_type: IntType, lexeme: "int", line: 13, column: 36 }
+   66: Token { token_type: LeftBrace, lexeme: "{", line: 13, column: 40 }
+   67: Token { token_type: Newline, lexeme: "\n", line: 13, column: 42 }
+   68: Token { token_type: IntType, lexeme: "int", line: 14, column: 4 }
+   69: Token { token_type: Identifier("sum"), lexeme: "sum", line: 14, column: 8 }
+   70: Token { token_type: Assign, lexeme: "=", line: 14, column: 12 }
+   71: Token { token_type: IntLiteral(0), lexeme: "0", line: 14, column: 14 }
+   72: Token { token_type: Semicolon, lexeme: ";", line: 14, column: 15 }
+   73: Token { token_type: Newline, lexeme: "\n", line: 14, column: 17 }
+   74: Token { token_type: Newline, lexeme: "\n", line: 15, column: 1 }
+   75: Token { token_type: ForEach, lexeme: "forEach", line: 16, column: 4 }
+   76: Token { token_type: LeftParen, lexeme: "(", line: 16, column: 12 }
+   77: Token { token_type: IntType, lexeme: "int", line: 16, column: 13 }
+   78: Token { token_type: Identifier("num"), lexeme: "num", line: 16, column: 17 }
+   79: Token { token_type: In, lexeme: "in", line: 16, column: 21 }
+   80: Token { token_type: Identifier("numbers"), lexeme: "numbers", line: 16, column: 24 }
+   81: Token { token_type: RightParen, lexeme: ")", line: 16, column: 31 }
+   82: Token { token_type: LeftBrace, lexeme: "{", line: 16, column: 33 }
+   83: Token { token_type: Newline, lexeme: "\n", line: 16, column: 35 }
+   84: Token { token_type: Identifier("sum"), lexeme: "sum", line: 17, column: 8 }
+   85: Token { token_type: PlusAssign, lexeme: "+=", line: 17, column: 12 }
+   86: Token { token_type: Identifier("num"), lexeme: "num", line: 17, column: 15 }
+   87: Token { token_type: Semicolon, lexeme: ";", line: 17, column: 18 }
+   88: Token { token_type: Newline, lexeme: "\n", line: 17, column: 20 }
+   89: Token { token_type: RightBrace, lexeme: "}", line: 18, column: 4 }
+   90: Token { token_type: Newline, lexeme: "\n", line: 18, column: 6 }
+   91: Token { token_type: Newline, lexeme: "\n", line: 19, column: 1 }
+   92: Token { token_type: Return, lexeme: "return", line: 20, column: 4 }
+   93: Token { token_type: Identifier("sum"), lexeme: "sum", line: 20, column: 11 }
+   94: Token { token_type: Semicolon, lexeme: ";", line: 20, column: 14 }
+   95: Token { token_type: Newline, lexeme: "\n", line: 20, column: 16 }
+   96: Token { token_type: RightBrace, lexeme: "}", line: 21, column: 0 }
+   97: Token { token_type: Newline, lexeme: "\n", line: 21, column: 2 }
+   98: Token { token_type: Newline, lexeme: "\n", line: 22, column: 1 }
+   99: Token { token_type: Func, lexeme: "func", line: 23, column: 0 }
+  100: Token { token_type: Identifier("main"), lexeme: "main", line: 23, column: 5 }
+  101: Token { token_type: LeftParen, lexeme: "(", line: 23, column: 9 }
+  102: Token { token_type: RightParen, lexeme: ")", line: 23, column: 10 }
+  103: Token { token_type: Arrow, lexeme: "->", line: 23, column: 12 }
+  104: Token { token_type: VoidType, lexeme: "void", line: 23, column: 15 }
+  105: Token { token_type: LeftBrace, lexeme: "{", line: 23, column: 20 }
+  106: Token { token_type: Newline, lexeme: "\n", line: 23, column: 22 }
+  107: Token { token_type: IntType, lexeme: "int", line: 24, column: 4 }
+  108: Token { token_type: Identifier("result"), lexeme: "result", line: 24, column: 8 }
+  109: Token { token_type: Assign, lexeme: "=", line: 24, column: 15 }
+  110: Token { token_type: Identifier("factorial"), lexeme: "factorial", line: 24, column: 17 }
+  111: Token { token_type: LeftParen, lexeme: "(", line: 24, column: 26 }
+  112: Token { token_type: IntLiteral(5), lexeme: "5", line: 24, column: 27 }
+  113: Token { token_type: RightParen, lexeme: ")", line: 24, column: 28 }
+  114: Token { token_type: Semicolon, lexeme: ";", line: 24, column: 29 }
+  115: Token { token_type: Newline, lexeme: "\n", line: 24, column: 31 }
+  116: Token { token_type: IntType, lexeme: "int", line: 25, column: 4 }
+  117: Token { token_type: LeftBracket, lexeme: "[", line: 25, column: 7 }
+  118: Token { token_type: RightBracket, lexeme: "]", line: 25, column: 8 }
+  119: Token { token_type: Identifier("data"), lexeme: "data", line: 25, column: 10 }
+  120: Token { token_type: Assign, lexeme: "=", line: 25, column: 15 }
+  121: Token { token_type: LeftBrace, lexeme: "{", line: 25, column: 17 }
+  122: Token { token_type: IntLiteral(1), lexeme: "1", line: 25, column: 18 }
+  123: Token { token_type: Comma, lexeme: ",", line: 25, column: 19 }
+  124: Token { token_type: IntLiteral(2), lexeme: "2", line: 25, column: 21 }
+  125: Token { token_type: Comma, lexeme: ",", line: 25, column: 22 }
+  126: Token { token_type: IntLiteral(3), lexeme: "3", line: 25, column: 24 }
+  127: Token { token_type: Comma, lexeme: ",", line: 25, column: 25 }
+  128: Token { token_type: IntLiteral(4), lexeme: "4", line: 25, column: 27 }
+  129: Token { token_type: Comma, lexeme: ",", line: 25, column: 28 }
+  130: Token { token_type: IntLiteral(5), lexeme: "5", line: 25, column: 30 }
+  131: Token { token_type: RightBrace, lexeme: "}", line: 25, column: 31 }
+  132: Token { token_type: Semicolon, lexeme: ";", line: 25, column: 32 }
+  133: Token { token_type: Newline, lexeme: "\n", line: 25, column: 34 }
+  134: Token { token_type: IntType, lexeme: "int", line: 26, column: 4 }
+  135: Token { token_type: Identifier("total"), lexeme: "total", line: 26, column: 8 }
+  136: Token { token_type: Assign, lexeme: "=", line: 26, column: 14 }
+  137: Token { token_type: Identifier("processArray"), lexeme: "processArray", line: 26, column: 16 }
+  138: Token { token_type: LeftParen, lexeme: "(", line: 26, column: 28 }
+  139: Token { token_type: Identifier("data"), lexeme: "data", line: 26, column: 29 }
+  140: Token { token_type: RightParen, lexeme: ")", line: 26, column: 33 }
+  141: Token { token_type: Semicolon, lexeme: ";", line: 26, column: 34 }
+  142: Token { token_type: Newline, lexeme: "\n", line: 26, column: 36 }
+  143: Token { token_type: Newline, lexeme: "\n", line: 27, column: 1 }
+  144: Token { token_type: StringType, lexeme: "string", line: 28, column: 4 }
+  145: Token { token_type: Identifier("greeting"), lexeme: "greeting", line: 28, column: 11 }
+  146: Token { token_type: Assign, lexeme: "=", line: 28, column: 20 }
+  147: Token { token_type: Identifier("message"), lexeme: "message", line: 28, column: 22 }
+  148: Token { token_type: Semicolon, lexeme: ";", line: 28, column: 29 }
+  149: Token { token_type: Newline, lexeme: "\n", line: 28, column: 31 }
+  150: Token { token_type: Newline, lexeme: "\n", line: 29, column: 1 }
+  151: Token { token_type: For, lexeme: "for", line: 30, column: 4 }
+  152: Token { token_type: LeftParen, lexeme: "(", line: 30, column: 8 }
+  153: Token { token_type: IntType, lexeme: "int", line: 30, column: 9 }
+  154: Token { token_type: Identifier("i"), lexeme: "i", line: 30, column: 13 }
+  155: Token { token_type: Assign, lexeme: "=", line: 30, column: 15 }
+  156: Token { token_type: IntLiteral(0), lexeme: "0", line: 30, column: 17 }
+  157: Token { token_type: Semicolon, lexeme: ";", line: 30, column: 18 }
+  158: Token { token_type: Identifier("i"), lexeme: "i", line: 30, column: 20 }
+  159: Token { token_type: Less, lexeme: "<", line: 30, column: 22 }
+  160: Token { token_type: Identifier("MAX_SIZE"), lexeme: "MAX_SIZE", line: 30, column: 24 }
+  161: Token { token_type: Semicolon, lexeme: ";", line: 30, column: 32 }
+  162: Token { token_type: Identifier("i"), lexeme: "i", line: 30, column: 34 }
+  163: Token { token_type: Increment, lexeme: "++", line: 30, column: 35 }
+  164: Token { token_type: RightParen, lexeme: ")", line: 30, column: 37 }
+  165: Token { token_type: LeftBrace, lexeme: "{", line: 30, column: 39 }
+  166: Token { token_type: Newline, lexeme: "\n", line: 30, column: 41 }
+  167: Token { token_type: Break, lexeme: "break", line: 31, column: 8 }
+  168: Token { token_type: If, lexeme: "if", line: 31, column: 14 }
+  169: Token { token_type: LeftParen, lexeme: "(", line: 31, column: 17 }
+  170: Token { token_type: Identifier("i"), lexeme: "i", line: 31, column: 18 }
+  171: Token { token_type: Equal, lexeme: "==", line: 31, column: 20 }
+  172: Token { token_type: IntLiteral(10), lexeme: "10", line: 31, column: 23 }
+  173: Token { token_type: RightParen, lexeme: ")", line: 31, column: 25 }
+  174: Token { token_type: Semicolon, lexeme: ";", line: 31, column: 26 }
+  175: Token { token_type: Newline, lexeme: "\n", line: 31, column: 28 }
+  176: Token { token_type: Newline, lexeme: "\n", line: 32, column: 1 }
+  177: Token { token_type: RightBrace, lexeme: "}", line: 33, column: 4 }
+  178: Token { token_type: Newline, lexeme: "\n", line: 33, column: 6 }
+  179: Token { token_type: RightBrace, lexeme: "}", line: 34, column: 0 }
+  180: Token { token_type: Eof, lexeme: "", line: 34, column: 1 }
+
+=== PHASE 2: SYNTAX ANALYSIS (PARSING) ===
+✅ Parsing successful!
+Program structure:
+  Functions: 3
+  Global variables: 2
+
+=== ABSTRACT SYNTAX TREE (AST) SUMMARY ===
+  1. Global variable const int MAX_SIZE (initialized)
+  2. Global variable string message (initialized)
+  3. Function 'factorial' -> int
+     Parameters: 1
+       1: int n
+     Statements in body: 2
+     Statement breakdown:
+       If statements: 1
+       Return statements: 2
+  4. Function 'processArray' -> int
+     Parameters: 1
+       1: int[] numbers
+     Statements in body: 3
+     Statement breakdown:
+       ForEach loops: 1
+       Expression statements: 1
+       Variable declarations: 1
+       Return statements: 1
+  5. Function 'main' -> void
+     Parameters: 0
+     Statements in body: 5
+     Statement breakdown:
+       Break statements: 1
+       For loops: 1
+       Variable declarations: 4
+
+=== PHASE 3: SEMANTIC ANALYSIS & TYPE CHECKING ===
+✅ Semantic analysis and type checking successful!
+   - All symbols properly declared and referenced
+   - All types are compatible
+   - Control flow statements are valid
+
+=== FULL AST (VERBOSE) ===
+Program {
+    items: [
+        GlobalVariable(
+            GlobalVariable {
+                is_const: true,
+                var_type: Int,
+                name: "MAX_SIZE",
+                initializer: Some(
+                    Literal(
+                        Int(
+                            100,
+                        ),
+                    ),
+                ),
+            },
+        ),
+        GlobalVariable(
+            GlobalVariable {
+                is_const: false,
+                var_type: String,
+                name: "message",
+                initializer: Some(
+                    Literal(
+                        String(
+                            "Hello Hydra!",
+                        ),
+                    ),
+                ),
+            },
+        ),
+        Function(
+            Function {
+                name: "factorial",
+                parameters: [
+                    Parameter {
+                        name: "n",
+                        param_type: Int,
+                    },
+                ],
+                return_type: Int,
+                body: Block {
+                    statements: [
+                        If(
+                            IfStmt {
+                                condition: Binary(
+                                    BinaryExpr {
+                                        left: Identifier(
+                                            "n",
+                                        ),
+                                        operator: LessEqual,
+                                        right: Literal(
+                                            Int(
+                                                1,
+                                            ),
+                                        ),
+                                    },
+                                ),
+                                then_branch: Block {
+                                    statements: [
+                                        Return(
+                                            ReturnStmt {
+                                                value: Some(
+                                                    Literal(
+                                                        Int(
+                                                            1,
+                                                        ),
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                },
+                                else_branch: None,
+                            },
+                        ),
+                        Return(
+                            ReturnStmt {
+                                value: Some(
+                                    Binary(
+                                        BinaryExpr {
+                                            left: Identifier(
+                                                "n",
+                                            ),
+                                            operator: Mul,
+                                            right: FunctionCall(
+                                                FunctionCallExpr {
+                                                    name: "factorial",
+                                                    arguments: [
+                                                        Binary(
+                                                            BinaryExpr {
+                                                                left: Identifier(
+                                                                    "n",
+                                                                ),
+                                                                operator: Sub,
+                                                                right: Literal(
+                                                                    Int(
+                                                                        1,
+                                                                    ),
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                    ],
+                },
+            },
+        ),
+        Function(
+            Function {
+                name: "processArray",
+                parameters: [
+                    Parameter {
+                        name: "numbers",
+                        param_type: Array(
+                            Int,
+                        ),
+                    },
+                ],
+                return_type: Int,
+                body: Block {
+                    statements: [
+                        VarDecl(
+                            VarDecl {
+                                is_const: false,
+                                var_type: Int,
+                                name: "sum",
+                                initializer: Some(
+                                    Literal(
+                                        Int(
+                                            0,
+                                        ),
+                                    ),
+                                ),
+                            },
+                        ),
+                        ForEach(
+                            ForEachStmt {
+                                var_type: Int,
+                                var_name: "num",
+                                iterable: Identifier(
+                                    "numbers",
+                                ),
+                                body: Block {
+                                    statements: [
+                                        Expression(
+                                            Binary(
+                                                BinaryExpr {
+                                                    left: Identifier(
+                                                        "sum",
+                                                    ),
+                                                    operator: AddAssign,
+                                                    right: Identifier(
+                                                        "num",
+                                                    ),
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                        Return(
+                            ReturnStmt {
+                                value: Some(
+                                    Identifier(
+                                        "sum",
+                                    ),
+                                ),
+                            },
+                        ),
+                    ],
+                },
+            },
+        ),
+        Function(
+            Function {
+                name: "main",
+                parameters: [],
+                return_type: Void,
+                body: Block {
+                    statements: [
+                        VarDecl(
+                            VarDecl {
+                                is_const: false,
+                                var_type: Int,
+                                name: "result",
+                                initializer: Some(
+                                    FunctionCall(
+                                        FunctionCallExpr {
+                                            name: "factorial",
+                                            arguments: [
+                                                Literal(
+                                                    Int(
+                                                        5,
+                                                    ),
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                        VarDecl(
+                            VarDecl {
+                                is_const: false,
+                                var_type: Array(
+                                    Int,
+                                ),
+                                name: "data",
+                                initializer: Some(
+                                    Array(
+                                        ArrayExpr {
+                                            elements: [
+                                                Literal(
+                                                    Int(
+                                                        1,
+                                                    ),
+                                                ),
+                                                Literal(
+                                                    Int(
+                                                        2,
+                                                    ),
+                                                ),
+                                                Literal(
+                                                    Int(
+                                                        3,
+                                                    ),
+                                                ),
+                                                Literal(
+                                                    Int(
+                                                        4,
+                                                    ),
+                                                ),
+                                                Literal(
+                                                    Int(
+                                                        5,
+                                                    ),
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                        VarDecl(
+                            VarDecl {
+                                is_const: false,
+                                var_type: Int,
+                                name: "total",
+                                initializer: Some(
+                                    FunctionCall(
+                                        FunctionCallExpr {
+                                            name: "processArray",
+                                            arguments: [
+                                                Identifier(
+                                                    "data",
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                        VarDecl(
+                            VarDecl {
+                                is_const: false,
+                                var_type: String,
+                                name: "greeting",
+                                initializer: Some(
+                                    Identifier(
+                                        "message",
+                                    ),
+                                ),
+                            },
+                        ),
+                        For(
+                            ForStmt {
+                                initializer: Some(
+                                    VarDecl(
+                                        VarDecl {
+                                            is_const: false,
+                                            var_type: Int,
+                                            name: "i",
+                                            initializer: Some(
+                                                Literal(
+                                                    Int(
+                                                        0,
+                                                    ),
+                                                ),
+                                            ),
+                                        },
+                                    ),
+                                ),
+                                condition: Some(
+                                    Binary(
+                                        BinaryExpr {
+                                            left: Identifier(
+                                                "i",
+                                            ),
+                                            operator: Less,
+                                            right: Identifier(
+                                                "MAX_SIZE",
+                                            ),
+                                        },
+                                    ),
+                                ),
+                                increment: Some(
+                                    Unary(
+                                        UnaryExpr {
+                                            operator: PostIncrement,
+                                            operand: Identifier(
+                                                "i",
+                                            ),
+                                        },
+                                    ),
+                                ),
+                                body: Block {
+                                    statements: [
+                                        Break(
+                                            BreakStmt {
+                                                condition: Some(
+                                                    Binary(
+                                                        BinaryExpr {
+                                                            left: Identifier(
+                                                                "i",
+                                                            ),
+                                                            operator: Equal,
+                                                            right: Literal(
+                                                                Int(
+                                                                    10,
+                                                                ),
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        ),
+    ],
+}
+
+=== COMPILATION COMPLETE ===
+🎉 File 'src/tests/normal.hydra' compiled successfully!
+
+All compilation phases completed:
+   ✅ Lexical Analysis
+   ✅ Syntax Analysis
+   ✅ Semantic Analysis
+   ✅ Type Checking
+
+Next phases (not yet implemented):
+   ⏳ Code Generation
+   ⏳ Optimization
+   ⏳ Linking
+
+Tip: Set environment variables for more output:
+  HYDRA_DEBUG=1   - Show all tokens
+  HYDRA_VERBOSE=1 - Show full AST
