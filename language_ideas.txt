@@ -16,11 +16,14 @@ const -> sets a variable to immutable
 
 KEYWORDS:
 
+true
+false
 import
 if
 else if
 else
-in
+in: used for element in iterable
+is: used for value in collection -> must be followed by in (for now) see SYNTAX in and is usage:
 break
 return
 skip: works like continue
@@ -28,7 +31,7 @@ break if: this works like instead of if (condition) break -> break if (condition
 func
 while
 for
-forEach: maybe? -> would only be able to be used on array types, would kinda work like hashmap; see SYNTAX
+forEach
 ->: not a keyword but just the arrow token used to determine function return type
 
 ARITHMETIC:
@@ -75,6 +78,17 @@ for (int i = 0; i <= var; i++) {
 	}
 }
 
+in and is usage:
+	string name = "Roger Federer";
+
+	forEach (char c in name.toCharArray()) {
+		stdout(c);
+	}
+
+	if ("a" is in name) {
+		return true;
+	}
+
 forEach (char c in characters) {
 	stdout(c);
 }
@@ -84,58 +98,177 @@ function declaration:
 		return a + b;
 	}
 
-syntaxual sugar:
+under the hood things:
 	every program needs a main entry point delimited by:
 		
 		func main() -> void {
+
 		}
 
-	all functions need a return type defined by the token following the arrow (->) token
+	all functions need a return type defined by the return type following the arrow (->) token
+		valid return types:
+			int
+			char
+			float
+			string
+			boolean
+			void
+			array equivalents
 
-STANDARD LIBRARY:
+	good func: 
+		func add(int a, int b) -> int {
 
-	stdout: print equivalent
+		}
+	
+	bad func:
+		func add(int a, int b) {
 
-	arrays will be immutable once size is defined
-	size must be defined when declaring
-	none of that: int[] arr;
-	you can set each element to null if you dont know what you want to put there and then intialize it later but it cant be empty
-	so: int[] arr = {null, null, null, null, null};
-		
-		for (int i = 0; i < arr.length(); i++) {
-			arr[i] = i;
 		}
 
-	array operations:
-		.length()
-		.toString()
-		
-		indexing -> arr[0]
-	
-	string ops:
-		.length() -> because strings are just char arrays
-		.upperCase()
-		.lowerCase()
-		.equals()
-		
-		interpolation would be included with stdout like:
-			int num = 10;
-			stdout("%d\n", num);
-		
-		NO CONCATENATION
-	
+	stdout: equivalent of print or println in other languages, i like stdout instead because its fun but it functions the same as print or println, might change later
+
 	globals must be defined at the top before any functions and after any imports if used
 	globals are accessible by any function without the need to pass as parameter
 
 	can have a variable like: global const int HEALTH = 100;
+
+	not going to enforce but recommend when defining variables you do:
+		<scope> <mutability> <type> <name>
+
+		scope = global or not
+		mutability = const or not
+
+		scope and mutability can be switched but type must always follow the scope or mutability and be before the variable name
+
+		good ->
+			const global int SCORE = 100; -> compiler give hug
+
+			global const int SCORE = 100; -> compiler give hug
+		
+		bad ->
+			global int const SCORE = 100; -> compiler throw hissy fit
+
+			const int global SCORE = 100; -> compiler throw hissy fit
+
+	interpolation would be included with stdout like:
+			int num = 10;
+			stdout("%d\n", num);
+		
+		NO CONCATENATION:
+			meaning none of this: 
+				stdout("Hello " + name + "! You are " + age + "years old"); -> this is stupid and a lot of extra typing for no reason
+			
+			or this:
+				string name = "Alan" + "Mitchell"; -> other languages support variable inline concatenation, i dont
+			
+			simply do this instead:
+				stdout("Hello %s! You are %d years old\n", name, age);
+
+				string name = "Alan Mitchell";
+			
+			no extra typing needed for the same functionality
+
+			
+	arrays will be immutable once size is defined
+	size must be defined when declaring
+	none of that: int[] arr;
+	and then arr = new int[8];
+
+	instead if you dont know values but know size, do this ->
+		int[] arr = {int, size};
+
+		this will tell the compiler that you want an array of ints of this size but the values are undefined now
+		this makes it safe for loops and other ops
+
+		the type in the intializer of the array must match the type declared:
+			
+			bad ->
+				int[] arr = {float, size}; -> compiler throw hissy function
+			
+			good ->
+				char[] arr = {char, size}; -> compiler give hug
+
+
+STANDARD LIBRARY:
+
+	stdout: print equivalent
+	stdin: user input
+	must always be assigned to a string
+
+	stdout("How old are you?: ");
+	string age = stdin();
+	stdout(); // new line
+	string.parseInt(age); -> converts to int
+
+
+	array operations:
+		.len() -> to differentiate easier between string length and arr len
+		.toString()
+		
+		indexing -> arr[0]
+
+		for loop intialization:
+			int[] arr = {int, 5};
+
+			for (int i = 0; i < arr.len(); i++) {
+				arr[i] = i;
+			}
+
+		in theory you could use forEach but not recommend for initialization because theres no indexing and would need an incrementer var:
+
+			int incrementer = 0;
+			forEach (int element in arr) {
+				incrementer++;
+				element = incrementer;
+
+				or 
+				element = incrementer;
+				incrementer++;
+
+				dont know the proper order
+			}
 	
-	null is assignable to any NON primitive type -> only strings rn and when i get other modules like maps and array lists
-	null == null evals to true
+	string ops:
+		.length() -> because strings are just char arrays
+		.upperCase() -> turns string into uppercase version of itself
+		.lowerCase() -> opposite of above
+		.equals() -> checks if string is equal to another value
+			string name = "john"
+			string other = "bleh"
 
+			name.equals("jon") -> evals to false
+			can also do variable, so:
+				name.equals(other) -> evals to false;
+
+		.toCharArray() -> as the name suggests
+
+		parse functions for stdin() stuff:
+			parseInt
+			parseFloat
+
+			i dont believe i would need a parseBool or parseChar
+		
+	char[] ops:
+		.toString() -> turns into string, makes a copy of the array and then concatenates/joins the elements
+						makes a copy because arrays are immutable
+						meaning you would have to assign it to a new variable
+						because the .toString() method creates a string "object" from the char[] type becuase all a string is under the hood is a char[]
+
+		example -> char[] abc = {'a', 'b', 'c'};
+					string def = abc.toString(); -> returns "abc"
+		
+		.isUpper() -> checks if an element is uppercase
+
+		example -> 
+			string name = "Jannik Sinner"
+			
+			int uppercaseCount = 0;
+			forEach (char c in name.toCharArray()) {
+				if (c.isUpper()) {
+					uppercaseCount++;
+				}
+			}
+
+		.isLower() -> see above and invert
+	
 	no function overloading for now
-
-func main() -> void {
-	// code
-}
-
-must be present this is the main entry point
