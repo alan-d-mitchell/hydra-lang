@@ -1,5 +1,5 @@
-use crate::parser::token::{Token, TokenType};
-use crate::ast::*;
+use crate::compiler::hydrac_parse::lexer::token::{Token, TokenType};
+use crate::compiler::hydrac_parse::parser::ast::*;
 
 pub struct Parser {
     tokens: Vec<Token>,

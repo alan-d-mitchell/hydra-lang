@@ -1,10 +1,7 @@
-pub mod token;
-pub mod ast;
-pub mod lexer;
-pub mod parser;
+pub mod hydrac_parse;
+pub mod hydrac_middle;
 
 // Re-export the main types for easier access
-pub use token::{Token, TokenType};
-pub use ast::*;
-pub use lexer::Lexer;
-pub use parser::Parser;
+pub use hydrac_parse::lexer::{Lexer, Token, TokenType};
+pub use hydrac_parse::parser::{Parser, ast};
+pub use hydrac_parse::parser::ast::*;

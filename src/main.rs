@@ -1,6 +1,6 @@
 mod compiler;
 
-use parser::{Lexer, Parser, ast};
+use compiler::{Lexer, Parser, ast};
 use std::env;
 use std::fs;
 use std::process;

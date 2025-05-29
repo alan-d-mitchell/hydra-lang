@@ -1,5 +1,4 @@
-
-use crate::parser::token::{Token, TokenType};
+use crate::compiler::hydrac_parse::lexer::token::{Token, TokenType};
 
 // ============================================================================
 // LEXER
