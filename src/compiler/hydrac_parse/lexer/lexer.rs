@@ -66,6 +66,24 @@ impl Lexer {
             ']' => Ok(Some((TokenType::RightBracket, c.to_string()))),
             ';' => Ok(Some((TokenType::Semicolon, c.to_string()))),
             ',' => Ok(Some((TokenType::Comma, c.to_string()))),
+            '.' => {
+                if self.match_char('.') {
+                    if self.match_char('.') {
+                        Ok(Some((TokenType::DotDotDot, "...".to_string())))
+                    } else {
+                        Err(format!("Unexpected '..' at line {}, column {}", self.line, self.column))
+                    }
+                } else {
+                    Ok(Some((TokenType::Dot, c.to_string())))
+                }
+            },
+            ':' => {
+                if self.match_char(':') {
+                    Ok(Some((TokenType::DoubleColon, "::".to_string())))
+                } else {
+                    Ok(Some((TokenType::Colon, c.to_string())))
+                }
+            },
             '+' => {
                 if self.match_char('=') {
                     Ok(Some((TokenType::PlusAssign, "+=".to_string())))
@@ -202,8 +220,51 @@ impl Lexer {
                 self.column = 0;
             }
             let c = self.advance();
-            value.push(c);
-            lexeme.push(c);
+            
+            // Handle escape sequences
+            if c == '\\' && !self.is_at_end() {
+                let escaped = self.advance();
+                match escaped {
+                    'n' => {
+                        value.push('\n');
+                        lexeme.push('\\');
+                        lexeme.push('n');
+                    },
+                    't' => {
+                        value.push('\t');
+                        lexeme.push('\\');
+                        lexeme.push('t');
+                    },
+                    'r' => {
+                        value.push('\r');
+                        lexeme.push('\\');
+                        lexeme.push('r');
+                    },
+                    '\\' => {
+                        value.push('\\');
+                        lexeme.push('\\');
+                        lexeme.push('\\');
+                    },
+                    '"' => {
+                        value.push('"');
+                        lexeme.push('\\');
+                        lexeme.push('"');
+                    },
+                    '%' => {
+                        value.push('%');
+                        lexeme.push('\\');
+                        lexeme.push('%');
+                    },
+                    _ => {
+                        value.push(escaped);
+                        lexeme.push('\\');
+                        lexeme.push(escaped);
+                    }
+                }
+            } else {
+                value.push(c);
+                lexeme.push(c);
+            }
         }
         
         if self.is_at_end() {

@@ -1,0 +1,116 @@
+// Test file demonstrating new import and namespace features
+import stdlib::io;
+import stdlib::string::toCharArray;
+import stdlib::array;
+import stdlib::math::sqrt;
+
+global const int BUFFER_SIZE = 1024;
+global string APP_NAME = "Hydra Demo App";
+
+// Function demonstrating array initialization syntax
+func createBuffers() -> void {
+    // New array initialization syntax: {type, size}
+    int[] numbers = {int, 10};           // Creates array of 10 integers
+    char[] buffer = {char, BUFFER_SIZE}; // Creates char buffer of size BUFFER_SIZE
+    float[] coords = {float, 3};         // Creates array of 3 floats
+    
+    // Traditional array initialization still works
+    string[] names = {"Alice", "Bob", "Charlie"};
+    int[] primes = {2, 3, 5, 7, 11};
+    
+    // Using namespace method calls - these get transformed to function calls
+    int nameCount = names::length();           // Transforms to: array::length(names)
+    string nameStr = names::toString();        // Transforms to: array::toString(names)
+    
+    // String method demonstrations
+    string greeting = "Hello World!";
+    int greetingLen = greeting::length();      // Transforms to: string::length(greeting)
+    char[] greetingChars = greeting::toCharArray(); // Transforms to: string::toCharArray(greeting)
+    string upperGreeting = greeting::toUpperCase(); // Transforms to: string::toUpperCase(greeting)
+    
+    // Array method calls
+    int bufferLen = buffer::length();          // Transforms to: array::length(buffer)
+    string bufferStr = buffer::toString();     // Transforms to: array::toString(buffer)
+}
+
+// Function demonstrating variadic function (format string simulation)
+func logger(string level, string format, ...) -> void {
+    // This would be a variadic function in a full implementation
+    // For now, it's parsed but not fully implemented
+}
+
+// Function using imported stdlib functions
+func mathDemo() -> void {
+    float x = 16.0;
+    float sqrtResult = stdlib::math::sqrt(x);  // Namespaced function call
+    
+    string message = "Computing square root";
+    char[] messageChars = stdlib::string::toCharArray(message);
+    
+    // These would work if stdlib::io::stdout was implemented
+    // stdlib::io::stdout("Result: %f\n", sqrtResult);
+}
+
+// Function demonstrating method chains and transformations
+func processText(string input) -> string {
+    // Chain of method calls - each gets transformed
+    string processed = input::toLowerCase()::toUpperCase();
+    
+    // Equivalent to:
+    // string temp1 = string::toLowerCase(input);
+    // string processed = string::toUpperCase(temp1);
+    
+    return processed;
+}
+
+// Function showing array processing
+func analyzeData(int[] data) -> void {
+    int dataLength = data::length();
+    
+    // Process each element
+    forEach (int value in data) {
+        if (value > 100) {
+            break if (value > 1000);
+        }
+    }
+    
+    // Convert to string for output
+    string dataStr = data::toString();
+}
+
+// Main function demonstrating various features
+func main() -> void {
+    // Create some test data
+    createBuffers();
+    
+    // Test math functions
+    mathDemo();
+    
+    // Test text processing
+    string result = processText("Hello Hydra Language!");
+    
+    // Test array analysis
+    int[] testData = {10, 50, 150, 500, 1500};
+    analyzeData(testData);
+    
+    // Test array initialization with expressions
+    int size = 5;
+    float[] dynamicArray = {float, size * 2};  // Size determined at runtime
+    
+    // Test type checking on array init
+    char[] validInit = {char, 10};     // Valid: char array with int size
+    // char[] invalidInit = {string, 10}; // Would cause error: type mismatch
+    // int[] invalidSize = {int, "10"};   // Would cause error: size must be int
+    
+    // Demonstrate method availability checking
+    int arrayLen = testData::length();         // Valid: arrays have length()
+    // boolean arrayUpper = testData::isUpper(); // Would error: arrays don't have isUpper()
+    
+    // String methods work correctly
+    string name = "Hydra";
+    char[] nameChars = name::toCharArray();    // Valid: strings have toCharArray()
+    int nameLength = name::length();           // Valid: strings have length()
+    
+    // Test format-like function calls (if implemented)
+    // logger("INFO", "Processing %d items with name %s", arrayLen, name);
+}

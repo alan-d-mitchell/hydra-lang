@@ -1,5 +1,6 @@
 use crate::compiler::hydrac_parse::parser::ast::*;
 use std::collections::HashMap;
+use std::path::Path;
 
 // ============================================================================
 // SEMANTIC ANALYSIS
@@ -12,8 +13,10 @@ pub struct Symbol {
     pub is_const: bool,
     pub is_global: bool,
     pub is_function: bool,
+    pub is_variadic: bool,
     pub line: usize,
     pub column: usize,
+    pub namespace: Option<Vec<String>>,
 }
 
 #[derive(Debug)]
@@ -63,26 +66,153 @@ impl Scope {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ImportResolver {
+    pub stdlib_path: String,
+    pub project_root: String,
+}
+
+impl ImportResolver {
+    pub fn new(stdlib_path: &str, project_root: &str) -> Self {
+        Self {
+            stdlib_path: stdlib_path.to_string(),
+            project_root: project_root.to_string(),
+        }
+    }
+    
+    pub fn resolve_import(&self, import: &ImportStmt) -> Result<Vec<String>, String> {
+        let path_str = import.path.join("::");
+        
+        // Try as stdlib import first
+        if import.path.get(0) == Some(&"stdlib".to_string()) {
+            let file_path = format!("{}/{}.hydra", self.stdlib_path, import.path[1..].join("/"));
+            if Path::new(&file_path).exists() {
+                return Ok(vec![file_path]);
+            }
+            
+            // Try as directory
+            let dir_path = format!("{}/{}", self.stdlib_path, import.path[1..].join("/"));
+            if Path::new(&dir_path).is_dir() {
+                return self.get_files_in_directory(&dir_path);
+            }
+        }
+        
+        // Try as project-relative import
+        let file_path = format!("{}/{}.hydra", self.project_root, import.path.join("/"));
+        if Path::new(&file_path).exists() {
+            return Ok(vec![file_path]);
+        }
+        
+        // Try as directory
+        let dir_path = format!("{}/{}", self.project_root, import.path.join("/"));
+        if Path::new(&dir_path).is_dir() {
+            return self.get_files_in_directory(&dir_path);
+        }
+        
+        Err(format!("Import not found: {}", path_str))
+    }
+    
+    fn get_files_in_directory(&self, dir_path: &str) -> Result<Vec<String>, String> {
+        let mut files = Vec::new();
+        
+        match std::fs::read_dir(dir_path) {
+            Ok(entries) => {
+                for entry in entries {
+                    if let Ok(entry) = entry {
+                        let path = entry.path();
+                        if path.extension().and_then(|s| s.to_str()) == Some("hydra") {
+                            if let Some(path_str) = path.to_str() {
+                                files.push(path_str.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+            Err(_) => return Err(format!("Cannot read directory: {}", dir_path)),
+        }
+        
+        if files.is_empty() {
+            Err(format!("No .hydra files found in directory: {}", dir_path))
+        } else {
+            Ok(files)
+        }
+    }
+}
+
 pub struct SemanticAnalyzer {
     pub global_scope: Scope,
     pub current_scope: Option<Box<Scope>>,
     pub errors: Vec<String>,
     pub current_function: Option<String>,
     pub in_loop: bool,
+    pub imports: Vec<ImportStmt>,
+    pub imported_symbols: HashMap<String, ImportedSymbol>,
+    pub import_resolver: ImportResolver,
+    pub type_methods: HashMap<String, Vec<String>>, // type -> available methods
 }
 
 impl SemanticAnalyzer {
     pub fn new() -> Self {
-        Self {
+        let mut analyzer = Self {
             global_scope: Scope::new(),
             current_scope: None,
             errors: Vec::new(),
             current_function: None,
             in_loop: false,
-        }
+            imports: Vec::new(),
+            imported_symbols: HashMap::new(),
+            import_resolver: ImportResolver::new("src/stdlib", "."),
+            type_methods: HashMap::new(),
+        };
+        
+        // Initialize built-in type methods
+        analyzer.init_builtin_type_methods();
+        
+        analyzer
+    }
+    
+    fn init_builtin_type_methods(&mut self) {
+        // String methods
+        self.type_methods.insert("string".to_string(), vec![
+            "length".to_string(),
+            "toCharArray".to_string(),
+            "toLowerCase".to_string(),
+            "toUpperCase".to_string(),
+            "equals".to_string(),
+            "toString".to_string(),
+        ]);
+        
+        // Array methods
+        self.type_methods.insert("int[]".to_string(), vec![
+            "length".to_string(),
+            "toString".to_string(),
+        ]);
+        self.type_methods.insert("float[]".to_string(), vec![
+            "length".to_string(),
+            "toString".to_string(),
+        ]);
+        self.type_methods.insert("string[]".to_string(), vec![
+            "length".to_string(),
+            "toString".to_string(),
+        ]);
+        self.type_methods.insert("char[]".to_string(), vec![
+            "length".to_string(),
+            "toString".to_string(),
+            "isUpper".to_string(),
+            "isLower".to_string(),
+        ]);
+        self.type_methods.insert("boolean[]".to_string(), vec![
+            "length".to_string(),
+            "toString".to_string(),
+        ]);
     }
 
     pub fn analyze(&mut self, program: &Program) -> Result<(), Vec<String>> {
+        // First, process all imports
+        for import in &program.imports {
+            self.process_import(import)?;
+        }
+        
         // First pass: collect all global declarations and function signatures
         for item in &program.items {
             match item {
@@ -93,8 +223,10 @@ impl SemanticAnalyzer {
                         is_const: false,
                         is_global: true,
                         is_function: true,
+                        is_variadic: func.is_variadic,
                         line: 0, // We don't have line info in AST yet
                         column: 0,
+                        namespace: None,
                     };
 
                     if let Err(e) = self.global_scope.declare(symbol) {
@@ -108,8 +240,10 @@ impl SemanticAnalyzer {
                         is_const: var.is_const,
                         is_global: true,
                         is_function: false,
+                        is_variadic: false,
                         line: 0,
                         column: 0,
+                        namespace: None,
                     };
 
                     if let Err(e) = self.global_scope.declare(symbol) {
@@ -139,6 +273,91 @@ impl SemanticAnalyzer {
             Err(self.errors.clone())
         }
     }
+    
+    fn process_import(&mut self, import: &ImportStmt) -> Result<(), Vec<String>> {
+        self.imports.push(import.clone());
+        
+        // For now, we'll simulate the import resolution
+        // In a real implementation, you'd parse the imported files
+        match self.import_resolver.resolve_import(import) {
+            Ok(files) => {
+                for file_path in files {
+                    self.process_imported_file(&file_path, import)?;
+                }
+            }
+            Err(e) => {
+                self.errors.push(format!("Import error: {}", e));
+            }
+        }
+        
+        Ok(())
+    }
+    
+    fn process_imported_file(&mut self, _file_path: &str, import: &ImportStmt) -> Result<(), Vec<String>> {
+        // For now, we'll add some standard library functions based on the import path
+        // In a real implementation, you'd parse the imported file and extract its symbols
+        
+        if import.path.get(0) == Some(&"stdlib".to_string()) {
+            match import.path.get(1).map(|s| s.as_str()) {
+                Some("io") => {
+                    if import.is_wildcard || import.path.get(2) == Some(&"stdout".to_string()) {
+                        self.imported_symbols.insert("stdout".to_string(), ImportedSymbol {
+                            name: "stdout".to_string(),
+                            namespace: vec!["stdlib".to_string(), "io".to_string()],
+                            symbol_type: ImportedSymbolType::Function,
+                        });
+                    }
+                    if import.is_wildcard || import.path.get(2) == Some(&"stdin".to_string()) {
+                        self.imported_symbols.insert("stdin".to_string(), ImportedSymbol {
+                            name: "stdin".to_string(),
+                            namespace: vec!["stdlib".to_string(), "io".to_string()],
+                            symbol_type: ImportedSymbolType::Function,
+                        });
+                    }
+                }
+                Some("math") => {
+                    let math_functions = vec!["sqrt", "pow", "ceil", "floor"];
+                    for func in math_functions {
+                        if import.is_wildcard || import.path.get(2) == Some(&func.to_string()) {
+                            self.imported_symbols.insert(func.to_string(), ImportedSymbol {
+                                name: func.to_string(),
+                                namespace: vec!["stdlib".to_string(), "math".to_string()],
+                                symbol_type: ImportedSymbolType::Function,
+                            });
+                        }
+                    }
+                }
+                Some("string") => {
+                    let string_functions = vec!["length", "equals", "parseFloat", "parseInt", 
+                                              "toCharArray", "toLowerCase", "toUpperCase"];
+                    for func in string_functions {
+                        if import.is_wildcard || import.path.get(2) == Some(&func.to_string()) {
+                            self.imported_symbols.insert(func.to_string(), ImportedSymbol {
+                                name: func.to_string(),
+                                namespace: vec!["stdlib".to_string(), "string".to_string()],
+                                symbol_type: ImportedSymbolType::Function,
+                            });
+                        }
+                    }
+                }
+                Some("array") => {
+                    let array_functions = vec!["len", "toString"];
+                    for func in array_functions {
+                        if import.is_wildcard || import.path.get(2) == Some(&func.to_string()) {
+                            self.imported_symbols.insert(func.to_string(), ImportedSymbol {
+                                name: func.to_string(),
+                                namespace: vec!["stdlib".to_string(), "array".to_string()],
+                                symbol_type: ImportedSymbolType::Function,
+                            });
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        
+        Ok(())
+    }
 
     fn analyze_function(&mut self, func: &Function) {
         self.current_function = Some(func.name.clone());
@@ -157,8 +376,10 @@ impl SemanticAnalyzer {
                 is_const: false,
                 is_global: false,
                 is_function: false,
+                is_variadic: false,
                 line: 0,
                 column: 0,
+                namespace: None,
             };
 
             if let Err(e) = function_scope.declare(symbol) {
@@ -267,8 +488,10 @@ impl SemanticAnalyzer {
                     is_const: false,
                     is_global: false,
                     is_function: false,
+                    is_variadic: false,
                     line: 0,
                     column: 0,
+                    namespace: None,
                 };
 
                 if let Err(e) = foreach_scope.declare(symbol) {
@@ -320,8 +543,10 @@ impl SemanticAnalyzer {
             is_const: var_decl.is_const,
             is_global: false,
             is_function: false,
+            is_variadic: false,
             line: 0,
             column: 0,
+            namespace: None,
         };
 
         if let Some(ref mut scope) = self.current_scope {
@@ -355,6 +580,9 @@ impl SemanticAnalyzer {
                     for (symbol_name, _) in &self.global_scope.symbols {
                         available_symbols.push(symbol_name.clone());
                     }
+                    for (symbol_name, _) in &self.imported_symbols {
+                        available_symbols.push(symbol_name.clone());
+                    }
                     
                     self.errors.push(format!(
                         "Undefined symbol '{}' (available symbols: {})", 
@@ -368,10 +596,26 @@ impl SemanticAnalyzer {
                     self.analyze_expression(element);
                 }
             }
+            Expression::ArrayInit(array_init) => {
+                // Validate that size expression is an integer
+                self.analyze_expression(&array_init.size);
+            }
             Expression::FunctionCall(call_expr) => {
-                // Check if function exists
-                if !self.is_function_defined(&call_expr.name) {
-                    self.errors.push(format!("Undefined function '{}'", call_expr.name));
+                // Check if function exists (either local or imported)
+                let is_defined = if let Some(ref namespace) = call_expr.namespace {
+                    self.is_namespaced_function_defined(namespace, &call_expr.name)
+                } else {
+                    self.is_function_defined(&call_expr.name) || 
+                    self.imported_symbols.contains_key(&call_expr.name)
+                };
+                
+                if !is_defined {
+                    if let Some(ref namespace) = call_expr.namespace {
+                        self.errors.push(format!("Undefined function '{}::{}' ", 
+                                               namespace.join("::"), call_expr.name));
+                    } else {
+                        self.errors.push(format!("Undefined function '{}'", call_expr.name));
+                    }
                 }
                 
                 // Analyze arguments
@@ -379,11 +623,60 @@ impl SemanticAnalyzer {
                     self.analyze_expression(arg);
                 }
             }
+            Expression::NamespacedCall(namespaced_call) => {
+                // Analyze the object expression first
+                self.analyze_expression(&namespaced_call.object);
+                
+                // For now, we assume this is a method call transformation
+                // In type checking, we'll validate that the method exists for the object's type
+                
+                // Analyze arguments
+                for arg in &namespaced_call.arguments {
+                    self.analyze_expression(arg);
+                }
+            }
             Expression::IsIn(is_in_expr) => {
                 self.analyze_expression(&is_in_expr.value);
                 self.analyze_expression(&is_in_expr.collection);
             }
+            Expression::FormatString(format_expr) => {
+                // Validate format string structure
+                self.validate_format_string(&format_expr.format_string);
+                
+                // Analyze all arguments
+                for arg in &format_expr.arguments {
+                    self.analyze_expression(arg);
+                }
+            }
         }
+    }
+    
+    fn validate_format_string(&mut self, format_str: &str) -> Vec<FormatSpecifier> {
+        let mut specifiers = Vec::new();
+        let mut chars = format_str.chars().peekable();
+        
+        while let Some(ch) = chars.next() {
+            if ch == '%' {
+                if let Some(&next_ch) = chars.peek() {
+                    if next_ch == '%' {
+                        // Escaped %
+                        chars.next();
+                        continue;
+                    }
+                    
+                    // Find the format specifier
+                    if let Some(spec_ch) = chars.next() {
+                        if let Some(spec) = FormatSpecifier::from_str(&spec_ch.to_string()) {
+                            specifiers.push(spec);
+                        } else {
+                            self.errors.push(format!("Unknown format specifier '%{}'", spec_ch));
+                        }
+                    }
+                }
+            }
+        }
+        
+        specifiers
     }
 
     fn collect_symbols_in_scope(&self, scope: &Scope, symbols: &mut Vec<String>) {
@@ -404,7 +697,12 @@ impl SemanticAnalyzer {
         }
         
         // Then check global scope
-        self.global_scope.lookup(name).is_some()
+        if self.global_scope.lookup(name).is_some() {
+            return true;
+        }
+        
+        // Finally check imported symbols
+        self.imported_symbols.contains_key(name)
     }
 
     fn is_function_defined(&self, name: &str) -> bool {
@@ -415,596 +713,33 @@ impl SemanticAnalyzer {
             false
         }
     }
-
-    pub fn analyze_with_type_checking(&mut self, program: &Program) -> Result<(), Vec<String>> {
-        // First pass: collect all global declarations and function signatures
-        for item in &program.items {
-            match item {
-                Item::Function(func) => {
-                    let symbol = Symbol {
-                        name: func.name.clone(),
-                        symbol_type: func.return_type.clone(),
-                        is_const: false,
-                        is_global: true,
-                        is_function: true,
-                        line: 0,
-                        column: 0,
-                    };
-
-                    if let Err(e) = self.global_scope.declare(symbol) {
-                        self.errors.push(e);
-                    }
-                }
-                Item::GlobalVariable(var) => {
-                    let symbol = Symbol {
-                        name: var.name.clone(),
-                        symbol_type: var.var_type.clone(),
-                        is_const: var.is_const,
-                        is_global: true,
-                        is_function: false,
-                        line: 0,
-                        column: 0,
-                    };
-
-                    if let Err(e) = self.global_scope.declare(symbol) {
-                        self.errors.push(e);
-                    }
-                }
+    
+    fn is_namespaced_function_defined(&self, namespace: &[String], name: &str) -> bool {
+        // Check if the function exists in the given namespace
+        for (_, imported_symbol) in &self.imported_symbols {
+            if imported_symbol.name == name && imported_symbol.namespace == namespace {
+                return matches!(imported_symbol.symbol_type, ImportedSymbolType::Function);
             }
         }
-
-        // Second pass: analyze function bodies and global variable initializers WITH type checking
-        for item in &program.items {
-            match item {
-                Item::Function(func) => {
-                    self.analyze_function_with_types(func);
-                }
-                Item::GlobalVariable(var) => {
-                    if let Some(ref expr) = var.initializer {
-                        // Type check the global variable initializer
-                        let expr_type = self.infer_expression_type(expr);
-                        if let Some(expr_type) = expr_type {
-                            if !self.types_compatible(&var.var_type, &expr_type) {
-                                self.errors.push(format!(
-                                    "Type mismatch in global variable '{}': expected {}, found {}",
-                                    var.name, var.var_type, expr_type
-                                ));
-                            }
-                        }
-                        
-                        self.analyze_expression(expr);
-                    }
-                }
-            }
-        }
-
-        if self.errors.is_empty() {
-            Ok(())
-        } else {
-            Err(self.errors.clone())
-        }
+        false
     }
-
-    fn analyze_function_with_types(&mut self, func: &Function) {
-        self.current_function = Some(func.name.clone());
+    
+    pub fn get_available_methods_for_type(&self, type_name: &str) -> Vec<String> {
+        self.type_methods.get(type_name).cloned().unwrap_or_default()
+    }
+    
+    pub fn transform_namespaced_call(&self, call: &NamespacedCallExpr, object_type: &Type) -> FunctionCallExpr {
+        // Transform var::method() to type::method(var)
+        let type_name = format!("{}", object_type);
+        let namespace = vec!["stdlib".to_string(), type_name];
         
-        // Save the current scope (should be None for top-level functions)
-        let saved_scope = self.current_scope.take();
+        let mut arguments = vec![*call.object.clone()];
+        arguments.extend(call.arguments.clone());
         
-        // Create new function scope
-        let mut function_scope = Scope::new();
-        
-        // Add parameters to function scope
-        for param in &func.parameters {
-            let symbol = Symbol {
-                name: param.name.clone(),
-                symbol_type: param.param_type.clone(),
-                is_const: false,
-                is_global: false,
-                is_function: false,
-                line: 0,
-                column: 0,
-            };
-
-            if let Err(e) = function_scope.declare(symbol) {
-                self.errors.push(e);
-            }
-        }
-
-        // Set function scope as current
-        self.current_scope = Some(Box::new(function_scope));
-        
-        // Analyze each statement in the function body WITH type checking
-        for stmt in &func.body.statements {
-            self.analyze_statement_with_types(stmt, &func.return_type);
-        }
-
-        // Restore previous scope
-        self.current_scope = saved_scope;
-        self.current_function = None;
-    }
-
-    fn analyze_statement_with_types(&mut self, stmt: &Statement, function_return_type: &Type) {
-        // Do semantic analysis and type checking together
-        match stmt {
-            Statement::VarDecl(var_decl) => {
-                // Type check initializer before declaring variable
-                if let Some(ref expr) = var_decl.initializer {
-                    let expr_type = self.infer_expression_type(expr);
-                    if let Some(expr_type) = expr_type {
-                        if !self.types_compatible(&var_decl.var_type, &expr_type) {
-                            self.errors.push(format!(
-                                "Type mismatch in variable '{}': expected {}, found {}",
-                                var_decl.name, var_decl.var_type, expr_type
-                            ));
-                        }
-                    }
-                }
-                
-                // Now declare the variable
-                self.analyze_var_decl(var_decl);
-            }
-            Statement::If(if_stmt) => {
-                // Type check condition
-                let cond_type = self.infer_expression_type(&if_stmt.condition);
-                if let Some(cond_type) = cond_type {
-                    if !matches!(cond_type, Type::Boolean) {
-                        self.errors.push(format!(
-                            "If condition must be boolean, found {}",
-                            cond_type
-                        ));
-                    }
-                }
-                
-                // Analyze branches
-                self.analyze_expression(&if_stmt.condition);
-                
-                // Create scope for then branch
-                let parent_scope = std::mem::replace(&mut self.current_scope, None);
-                let then_scope = if let Some(parent) = parent_scope {
-                    Scope::with_parent(parent)
-                } else {
-                    Scope::new()
-                };
-                self.current_scope = Some(Box::new(then_scope));
-                
-                for stmt in &if_stmt.then_branch.statements {
-                    self.analyze_statement_with_types(stmt, function_return_type);
-                }
-                
-                self.current_scope = self.current_scope.take().and_then(|scope| scope.parent);
-                
-                if let Some(ref else_branch) = if_stmt.else_branch {
-                    self.analyze_statement_with_types(else_branch, function_return_type);
-                }
-            }
-            Statement::While(while_stmt) => {
-                let prev_in_loop = self.in_loop;
-                self.in_loop = true;
-                
-                // Type check condition
-                let cond_type = self.infer_expression_type(&while_stmt.condition);
-                if let Some(cond_type) = cond_type {
-                    if !matches!(cond_type, Type::Boolean) {
-                        self.errors.push(format!(
-                            "While condition must be boolean, found {}",
-                            cond_type
-                        ));
-                    }
-                }
-                
-                self.analyze_expression(&while_stmt.condition);
-                
-                // Create scope for body
-                let parent_scope = std::mem::replace(&mut self.current_scope, None);
-                let body_scope = if let Some(parent) = parent_scope {
-                    Scope::with_parent(parent)
-                } else {
-                    Scope::new()
-                };
-                self.current_scope = Some(Box::new(body_scope));
-                
-                for stmt in &while_stmt.body.statements {
-                    self.analyze_statement_with_types(stmt, function_return_type);
-                }
-                
-                self.current_scope = self.current_scope.take().and_then(|scope| scope.parent);
-                self.in_loop = prev_in_loop;
-            }
-            Statement::For(for_stmt) => {
-                let prev_in_loop = self.in_loop;
-                self.in_loop = true;
-                
-                // Create new scope for the for loop
-                let parent_scope = std::mem::replace(&mut self.current_scope, None);
-                let for_scope = if let Some(parent) = parent_scope {
-                    Scope::with_parent(parent)
-                } else {
-                    Scope::new()
-                };
-                self.current_scope = Some(Box::new(for_scope));
-                
-                // Analyze initializer (this might declare a variable)
-                if let Some(ref init) = for_stmt.initializer {
-                    self.analyze_statement_with_types(init, function_return_type);
-                }
-                
-                // Type check condition
-                if let Some(ref cond) = for_stmt.condition {
-                    let cond_type = self.infer_expression_type(cond);
-                    if let Some(cond_type) = cond_type {
-                        if !matches!(cond_type, Type::Boolean) {
-                            self.errors.push(format!(
-                                "For condition must be boolean, found {}",
-                                cond_type
-                            ));
-                        }
-                    }
-                    self.analyze_expression(cond);
-                }
-                
-                // Analyze increment
-                if let Some(ref inc) = for_stmt.increment {
-                    self.infer_expression_type(inc); // Type check
-                    self.analyze_expression(inc);    // Semantic check
-                }
-                
-                // Analyze body
-                for stmt in &for_stmt.body.statements {
-                    self.analyze_statement_with_types(stmt, function_return_type);
-                }
-                
-                // Restore parent scope
-                self.current_scope = self.current_scope.take().and_then(|scope| scope.parent);
-                self.in_loop = prev_in_loop;
-            }
-            Statement::ForEach(foreach_stmt) => {
-                let prev_in_loop = self.in_loop;
-                self.in_loop = true;
-                
-                // First analyze the iterable expression in the current scope
-                self.analyze_expression(&foreach_stmt.iterable);
-                
-                // Create new scope for foreach variable
-                let parent_scope = std::mem::replace(&mut self.current_scope, None);
-                let mut foreach_scope = if let Some(parent) = parent_scope {
-                    Scope::with_parent(parent)
-                } else {
-                    Scope::new()
-                };
-
-                let symbol = Symbol {
-                    name: foreach_stmt.var_name.clone(),
-                    symbol_type: foreach_stmt.var_type.clone(),
-                    is_const: false,
-                    is_global: false,
-                    is_function: false,
-                    line: 0,
-                    column: 0,
-                };
-
-                if let Err(e) = foreach_scope.declare(symbol) {
-                    self.errors.push(e);
-                }
-
-                self.current_scope = Some(Box::new(foreach_scope));
-                
-                for stmt in &foreach_stmt.body.statements {
-                    self.analyze_statement_with_types(stmt, function_return_type);
-                }
-                
-                // Restore parent scope
-                self.current_scope = self.current_scope.take().and_then(|scope| scope.parent);
-                self.in_loop = prev_in_loop;
-            }
-            Statement::Return(return_stmt) => {
-                if self.current_function.is_none() {
-                    self.errors.push("Return statement outside of function".to_string());
-                }
-                
-                if let Some(ref expr) = return_stmt.value {
-                    let return_type = self.infer_expression_type(expr);
-                    if let Some(return_type) = return_type {
-                        if !self.types_compatible(function_return_type, &return_type) {
-                            self.errors.push(format!(
-                                "Return type mismatch: expected {}, found {}",
-                                function_return_type, return_type
-                            ));
-                        }
-                    }
-                    self.analyze_expression(expr);
-                } else if !matches!(function_return_type, Type::Void) {
-                    self.errors.push(format!(
-                        "Function expects return value of type {}, but none provided",
-                        function_return_type
-                    ));
-                }
-            }
-            Statement::Break(break_stmt) => {
-                if !self.in_loop {
-                    self.errors.push("Break statement outside of loop".to_string());
-                }
-                if let Some(ref cond) = break_stmt.condition {
-                    let cond_type = self.infer_expression_type(cond);
-                    if let Some(cond_type) = cond_type {
-                        if !matches!(cond_type, Type::Boolean) {
-                            self.errors.push(format!(
-                                "Break condition must be boolean, found {}",
-                                cond_type
-                            ));
-                        }
-                    }
-                    self.analyze_expression(cond);
-                }
-            }
-            Statement::Skip(_) => {
-                if !self.in_loop {
-                    self.errors.push("Skip statement outside of loop".to_string());
-                }
-            }
-            Statement::Expression(expr) => {
-                self.infer_expression_type(expr); // Type check
-                self.analyze_expression(expr);    // Semantic check
-            }
-        }
-    }
-
-    // Add type checking methods to SemanticAnalyzer
-    fn infer_expression_type(&mut self, expr: &Expression) -> Option<Type> {
-        match expr {
-            Expression::Literal(literal) => Some(self.literal_type(literal)),
-            Expression::Identifier(name) => {
-                if let Some(symbol) = self.get_symbol(name) {
-                    Some(symbol.symbol_type.clone())
-                } else {
-                    // Debug: Let's see what symbols are available
-                    let mut available_symbols = Vec::new();
-                    
-                    // Collect symbols from current scope chain
-                    if let Some(ref scope) = self.current_scope {
-                        self.collect_symbols_in_scope_debug(scope, &mut available_symbols);
-                    }
-                    
-                    // Collect global symbols
-                    for (symbol_name, _) in &self.global_scope.symbols {
-                        available_symbols.push(symbol_name.clone());
-                    }
-                    
-                    self.errors.push(format!(
-                        "Undefined identifier '{}' (available symbols: {})", 
-                        name, 
-                        available_symbols.join(", ")
-                    ));
-                    None
-                }
-            }
-            Expression::Binary(binary_expr) => {
-                self.infer_binary_type(binary_expr)
-            }
-            Expression::Unary(unary_expr) => {
-                self.infer_unary_type(unary_expr)
-            }
-            Expression::Array(array_expr) => {
-                self.infer_array_type(array_expr)
-            }
-            Expression::FunctionCall(call_expr) => {
-                self.infer_function_call_type(call_expr)
-            }
-            Expression::IsIn(_) => {
-                Some(Type::Boolean)
-            }
-        }
-    }
-
-    fn collect_symbols_in_scope_debug(&self, scope: &Scope, symbols: &mut Vec<String>) {
-        for (name, _) in &scope.symbols {
-            symbols.push(name.clone());
-        }
-        if let Some(ref parent) = scope.parent {
-            self.collect_symbols_in_scope_debug(parent, symbols);
-        }
-    }
-
-    fn literal_type(&self, literal: &Literal) -> Type {
-        match literal {
-            Literal::Int(_) => Type::Int,
-            Literal::Float(_) => Type::Float,
-            Literal::String(_) => Type::String,
-            Literal::Char(_) => Type::Char,
-            Literal::Bool(_) => Type::Boolean,
-            Literal::Null => Type::Void,
-        }
-    }
-
-    fn infer_binary_type(&mut self, binary_expr: &BinaryExpr) -> Option<Type> {
-        let left_type = self.infer_expression_type(&binary_expr.left)?;
-        let right_type = self.infer_expression_type(&binary_expr.right)?;
-
-        match binary_expr.operator {
-            BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul | BinaryOperator::Div | BinaryOperator::Mod => {
-                if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
-                    // For modulo operation, ensure both operands are integers
-                    if matches!(binary_expr.operator, BinaryOperator::Mod) {
-                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
-                            self.errors.push(format!(
-                                "Modulo operation requires integer types, found {} and {}",
-                                left_type, right_type
-                            ));
-                            return None;
-                        }
-                        Some(Type::Int)
-                    } else {
-                        // For other arithmetic operations, allow float promotion
-                        if matches!(left_type, Type::Float) || matches!(right_type, Type::Float) {
-                            Some(Type::Float)
-                        } else {
-                            Some(Type::Int)
-                        }
-                    }
-                } else {
-                    self.errors.push(format!(
-                        "Arithmetic operation requires numeric types, found {} and {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            BinaryOperator::Equal | BinaryOperator::NotEqual => {
-                if self.types_compatible(&left_type, &right_type) {
-                    Some(Type::Boolean)
-                } else {
-                    self.errors.push(format!(
-                        "Comparison requires compatible types, found {} and {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            BinaryOperator::Less | BinaryOperator::LessEqual | 
-            BinaryOperator::Greater | BinaryOperator::GreaterEqual => {
-                if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
-                    Some(Type::Boolean)
-                } else {
-                    self.errors.push(format!(
-                        "Numeric comparison requires numeric types, found {} and {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            BinaryOperator::And | BinaryOperator::Or => {
-                if matches!(left_type, Type::Boolean) && matches!(right_type, Type::Boolean) {
-                    Some(Type::Boolean)
-                } else {
-                    self.errors.push(format!(
-                        "Logical operation requires boolean types, found {} and {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            BinaryOperator::Assign => {
-                if self.types_compatible(&left_type, &right_type) {
-                    Some(left_type)
-                } else {
-                    self.errors.push(format!(
-                        "Assignment type mismatch: {} = {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            BinaryOperator::AddAssign | BinaryOperator::SubAssign | 
-            BinaryOperator::MulAssign | BinaryOperator::DivAssign | BinaryOperator::ModAssign => {
-                if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
-                    // For modulo assignment, ensure both operands are integers
-                    if matches!(binary_expr.operator, BinaryOperator::ModAssign) {
-                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
-                            self.errors.push(format!(
-                                "Modulo assignment requires integer types, found {} and {}",
-                                left_type, right_type
-                            ));
-                            return None;
-                        }
-                    }
-                    Some(left_type)
-                } else {
-                    self.errors.push(format!(
-                        "Compound assignment requires numeric types, found {} and {}",
-                        left_type, right_type
-                    ));
-                    None
-                }
-            }
-            _ => Some(left_type), // For other operators
-        }
-    }
-
-    fn infer_unary_type(&mut self, unary_expr: &UnaryExpr) -> Option<Type> {
-        let operand_type = self.infer_expression_type(&unary_expr.operand)?;
-
-        match unary_expr.operator {
-            UnaryOperator::Not => {
-                if matches!(operand_type, Type::Boolean) {
-                    Some(Type::Boolean)
-                } else {
-                    self.errors.push(format!("Logical NOT requires boolean type, found {}", operand_type));
-                    None
-                }
-            }
-            UnaryOperator::Minus => {
-                if self.is_numeric_type(&operand_type) {
-                    Some(operand_type)
-                } else {
-                    self.errors.push(format!("Unary minus requires numeric type, found {}", operand_type));
-                    None
-                }
-            }
-            UnaryOperator::PreIncrement | UnaryOperator::PreDecrement |
-            UnaryOperator::PostIncrement | UnaryOperator::PostDecrement => {
-                if self.is_numeric_type(&operand_type) {
-                    Some(operand_type)
-                } else {
-                    self.errors.push(format!("Increment/decrement requires numeric type, found {}", operand_type));
-                    None
-                }
-            }
-        }
-    }
-
-    fn infer_array_type(&mut self, array_expr: &ArrayExpr) -> Option<Type> {
-        if array_expr.elements.is_empty() {
-            self.errors.push("Cannot infer type of empty array".to_string());
-            return None;
-        }
-
-        let first_type = self.infer_expression_type(&array_expr.elements[0])?;
-        
-        for (i, element) in array_expr.elements.iter().enumerate().skip(1) {
-            let element_type = self.infer_expression_type(element)?;
-            if !self.types_compatible(&first_type, &element_type) {
-                self.errors.push(format!(
-                    "Array element {} has type {}, expected {}",
-                    i, element_type, first_type
-                ));
-                return None;
-            }
-        }
-
-        Some(Type::Array(Box::new(first_type)))
-    }
-
-    fn infer_function_call_type(&mut self, call_expr: &FunctionCallExpr) -> Option<Type> {
-        if let Some(symbol) = self.get_symbol(&call_expr.name) {
-            if symbol.is_function {
-                Some(symbol.symbol_type.clone())
-            } else {
-                self.errors.push(format!("'{}' is not a function", call_expr.name));
-                None
-            }
-        } else {
-            self.errors.push(format!("Undefined function '{}'", call_expr.name));
-            None
-        }
-    }
-
-    fn is_numeric_type(&self, t: &Type) -> bool {
-        matches!(t, Type::Int | Type::Float)
-    }
-
-    fn types_compatible(&self, expected: &Type, actual: &Type) -> bool {
-        match (expected, actual) {
-            (Type::Int, Type::Int) => true,
-            (Type::Float, Type::Float) => true,
-            (Type::Float, Type::Int) => true, // Allow int to float promotion
-            (Type::String, Type::String) => true,
-            (Type::Char, Type::Char) => true,
-            (Type::Boolean, Type::Boolean) => true,
-            (Type::Void, Type::Void) => true,
-            (Type::Array(expected_inner), Type::Array(actual_inner)) => {
-                self.types_compatible(expected_inner, actual_inner)
-            }
-            _ => false,
+        FunctionCallExpr {
+            name: call.method.clone(),
+            namespace: Some(namespace),
+            arguments,
         }
     }
 

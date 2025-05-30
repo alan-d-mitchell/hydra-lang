@@ -6,6 +6,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Program {
+    pub imports: Vec<ImportStmt>,
     pub items: Vec<Item>,
 }
 
@@ -16,11 +17,18 @@ pub enum Item {
 }
 
 #[derive(Debug, Clone)]
+pub struct ImportStmt {
+    pub path: Vec<String>, // e.g., ["stdlib", "io", "stdout"]
+    pub is_wildcard: bool, // true for "import stdlib", false for "import stdlib::io::stdout"
+}
+
+#[derive(Debug, Clone)]
 pub struct Function {
     pub name: String,
     pub parameters: Vec<Parameter>,
     pub return_type: Type,
     pub body: Block,
+    pub is_variadic: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -112,8 +120,11 @@ pub enum Expression {
     Literal(Literal),
     Identifier(String),
     Array(ArrayExpr),
+    ArrayInit(ArrayInitExpr),  // New: for {type, size} syntax
     FunctionCall(FunctionCallExpr),
+    NamespacedCall(NamespacedCallExpr),  // New: for var::method() syntax
     IsIn(IsInExpr),
+    FormatString(FormatStringExpr),  // New: for format strings
 }
 
 #[derive(Debug, Clone)]
@@ -135,8 +146,22 @@ pub struct ArrayExpr {
 }
 
 #[derive(Debug, Clone)]
+pub struct ArrayInitExpr {
+    pub element_type: Type,
+    pub size: Box<Expression>,
+}
+
+#[derive(Debug, Clone)]
 pub struct FunctionCallExpr {
     pub name: String,
+    pub namespace: Option<Vec<String>>, // e.g., Some(["stdlib", "io"]) for stdlib::io::function
+    pub arguments: Vec<Expression>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NamespacedCallExpr {
+    pub object: Box<Expression>,  // The variable/expression before ::
+    pub method: String,           // The method name after ::
     pub arguments: Vec<Expression>,
 }
 
@@ -144,6 +169,12 @@ pub struct FunctionCallExpr {
 pub struct IsInExpr {
     pub value: Box<Expression>,
     pub collection: Box<Expression>,
+}
+
+#[derive(Debug, Clone)]
+pub struct FormatStringExpr {
+    pub format_string: String,
+    pub arguments: Vec<Expression>,
 }
 
 #[derive(Debug, Clone)]
@@ -179,6 +210,7 @@ pub enum Type {
     Boolean,
     Void,
     Array(Box<Type>),
+    Variadic(Box<Type>), // New: for variadic parameters
 }
 
 impl fmt::Display for Type {
@@ -191,6 +223,61 @@ impl fmt::Display for Type {
             Type::Boolean => write!(f, "boolean"),
             Type::Void => write!(f, "void"),
             Type::Array(inner) => write!(f, "{}[]", inner),
+            Type::Variadic(inner) => write!(f, "{}...", inner),
+        }
+    }
+}
+
+// Helper structs for import and namespace resolution
+#[derive(Debug, Clone)]
+pub struct ImportedSymbol {
+    pub name: String,
+    pub namespace: Vec<String>,
+    pub symbol_type: ImportedSymbolType,
+}
+
+#[derive(Debug, Clone)]
+pub enum ImportedSymbolType {
+    Function,
+    Variable,
+    Type,
+}
+
+#[derive(Debug, Clone)]
+pub struct NamespaceContext {
+    pub imports: Vec<ImportStmt>,
+    pub available_symbols: Vec<ImportedSymbol>,
+}
+
+// Format string validation helpers
+#[derive(Debug, Clone)]
+pub enum FormatSpecifier {
+    Int,        // %d
+    Float,      // %f
+    String,     // %s
+    Char,       // %c
+    Boolean,    // %b
+}
+
+impl FormatSpecifier {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "d" => Some(FormatSpecifier::Int),
+            "f" => Some(FormatSpecifier::Float),
+            "s" => Some(FormatSpecifier::String),
+            "c" => Some(FormatSpecifier::Char),
+            "b" => Some(FormatSpecifier::Boolean),
+            _ => None,
+        }
+    }
+    
+    pub fn expected_type(&self) -> Type {
+        match self {
+            FormatSpecifier::Int => Type::Int,
+            FormatSpecifier::Float => Type::Float,
+            FormatSpecifier::String => Type::String,
+            FormatSpecifier::Char => Type::Char,
+            FormatSpecifier::Boolean => Type::Boolean,
         }
     }
 }

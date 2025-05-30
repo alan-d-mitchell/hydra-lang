@@ -41,8 +41,21 @@ impl<'a> TypeChecker<'a> {
 
     fn check_function(&mut self, func: &Function) {
         self.current_function_return_type = Some(func.return_type.clone());
-        self.check_block(&func.body);
+        
+        // For variadic functions, we need special handling
+        if func.is_variadic {
+            self.check_variadic_function(func);
+        } else {
+            self.check_block(&func.body);
+        }
+        
         self.current_function_return_type = None;
+    }
+    
+    fn check_variadic_function(&mut self, func: &Function) {
+        // Variadic functions need special validation
+        // For now, we'll just check the body normally
+        self.check_block(&func.body);
     }
 
     fn check_global_variable(&mut self, var: &GlobalVariable) {
@@ -201,25 +214,12 @@ impl<'a> TypeChecker<'a> {
             Expression::Identifier(name) => {
                 if let Some(symbol) = self.analyzer.get_symbol(name) {
                     Some(symbol.symbol_type.clone())
+                } else if self.analyzer.imported_symbols.contains_key(name) {
+                    // For imported symbols, we need to determine their type
+                    // For now, assume functions return void (this would be improved with proper import metadata)
+                    Some(Type::Void)
                 } else {
-                    // Debug: Let's see what symbols are available
-                    let mut available_symbols = Vec::new();
-                    
-                    // Collect symbols from current scope chain
-                    if let Some(ref scope) = self.analyzer.current_scope {
-                        self.collect_symbols_in_scope(scope, &mut available_symbols);
-                    }
-                    
-                    // Collect global symbols
-                    for (symbol_name, _) in &self.analyzer.global_scope.symbols {
-                        available_symbols.push(symbol_name.clone());
-                    }
-                    
-                    self.errors.push(format!(
-                        "Undefined identifier '{}' (available symbols: {})", 
-                        name, 
-                        available_symbols.join(", ")
-                    ));
+                    self.errors.push(format!("Undefined identifier '{}'", name));
                     None
                 }
             }
@@ -232,12 +232,108 @@ impl<'a> TypeChecker<'a> {
             Expression::Array(array_expr) => {
                 self.infer_array_type(array_expr)
             }
+            Expression::ArrayInit(array_init) => {
+                self.infer_array_init_type(array_init)
+            }
             Expression::FunctionCall(call_expr) => {
                 self.infer_function_call_type(call_expr)
             }
+            Expression::NamespacedCall(namespaced_call) => {
+                self.infer_namespaced_call_type(namespaced_call)
+            }
             Expression::IsIn(_) => {
-                // "is in" expressions always return boolean
                 Some(Type::Boolean)
+            }
+            Expression::FormatString(format_expr) => {
+                self.check_format_string(format_expr);
+                Some(Type::Void) // format functions typically return void
+            }
+        }
+    }
+    
+    fn infer_array_init_type(&mut self, array_init: &ArrayInitExpr) -> Option<Type> {
+        // Check that size is an integer
+        let size_type = self.infer_expression_type(&array_init.size);
+        if let Some(size_type) = size_type {
+            if !matches!(size_type, Type::Int) {
+                self.errors.push(format!(
+                    "Array size must be of type int, found {}",
+                    size_type
+                ));
+            }
+        }
+        
+        Some(Type::Array(Box::new(array_init.element_type.clone())))
+    }
+    
+    fn infer_namespaced_call_type(&mut self, namespaced_call: &NamespacedCallExpr) -> Option<Type> {
+        // First, get the type of the object
+        let object_type = self.infer_expression_type(&namespaced_call.object)?;
+        
+        // Check if the method is available for this type
+        let type_name = format!("{}", object_type);
+        let available_methods = self.analyzer.get_available_methods_for_type(&type_name);
+        
+        if !available_methods.contains(&namespaced_call.method) {
+            self.errors.push(format!(
+                "Method '{}' is not available for type {}. Available methods: {}",
+                namespaced_call.method, type_name, available_methods.join(", ")
+            ));
+            return None;
+        }
+        
+        // Analyze arguments
+        for arg in &namespaced_call.arguments {
+            self.infer_expression_type(arg);
+        }
+        
+        // Return type depends on the method
+        match namespaced_call.method.as_str() {
+            "length" => Some(Type::Int),
+            "toString" => Some(Type::String),
+            "toCharArray" => Some(Type::Array(Box::new(Type::Char))),
+            "toLowerCase" | "toUpperCase" => Some(Type::String),
+            "equals" => Some(Type::Boolean),
+            "isUpper" | "isLower" => Some(Type::Boolean),
+            _ => {
+                // For unknown methods, try to infer from stdlib
+                self.infer_stdlib_method_type(&namespaced_call.method)
+            }
+        }
+    }
+    
+    fn infer_stdlib_method_type(&self, method_name: &str) -> Option<Type> {
+        // This would be expanded based on the actual stdlib methods
+        match method_name {
+            "parseInt" => Some(Type::Int),
+            "parseFloat" => Some(Type::Float),
+            _ => Some(Type::Void), // Default for unknown methods
+        }
+    }
+    
+    fn check_format_string(&mut self, format_expr: &FormatStringExpr) {
+        let specifiers = self.analyzer.validate_format_string(&format_expr.format_string);
+        
+        // Check that the number of arguments matches the number of specifiers
+        if specifiers.len() != format_expr.arguments.len() {
+            self.errors.push(format!(
+                "Format string expects {} arguments, but {} provided",
+                specifiers.len(), format_expr.arguments.len()
+            ));
+            return;
+        }
+        
+        // Check that each argument type matches the corresponding format specifier
+        for (i, (spec, arg)) in specifiers.iter().zip(&format_expr.arguments).enumerate() {
+            let arg_type = self.infer_expression_type(arg);
+            if let Some(arg_type) = arg_type {
+                let expected_type = spec.expected_type();
+                if !self.types_compatible(&expected_type, &arg_type) {
+                    self.errors.push(format!(
+                        "Format argument {} type mismatch: expected {} for %{:?}, found {}",
+                        i + 1, expected_type, spec, arg_type
+                    ));
+                }
             }
         }
     }
@@ -439,6 +535,53 @@ impl<'a> TypeChecker<'a> {
     }
 
     fn infer_function_call_type(&mut self, call_expr: &FunctionCallExpr) -> Option<Type> {
+        // Handle namespaced function calls
+        if let Some(ref namespace) = call_expr.namespace {
+            // Check if it's a valid imported function
+            let namespaced_name = format!("{}::{}", namespace.join("::"), call_expr.name);
+            
+            // For stdlib functions, we can hardcode some return types
+            if namespace.get(0) == Some(&"stdlib".to_string()) {
+                match namespace.get(1).map(|s| s.as_str()) {
+                    Some("math") => {
+                        match call_expr.name.as_str() {
+                            "sqrt" | "pow" | "ceil" | "floor" => return Some(Type::Float),
+                            _ => {}
+                        }
+                    }
+                    Some("string") => {
+                        match call_expr.name.as_str() {
+                            "length" => return Some(Type::Int),
+                            "equals" => return Some(Type::Boolean),
+                            "parseFloat" => return Some(Type::Float),
+                            "parseInt" => return Some(Type::Int),
+                            "toCharArray" => return Some(Type::Array(Box::new(Type::Char))),
+                            "toLowerCase" | "toUpperCase" => return Some(Type::String),
+                            _ => {}
+                        }
+                    }
+                    Some("array") => {
+                        match call_expr.name.as_str() {
+                            "len" => return Some(Type::Int),
+                            "toString" => return Some(Type::String),
+                            _ => {}
+                        }
+                    }
+                    Some("io") => {
+                        match call_expr.name.as_str() {
+                            "stdout" | "stdin" => return Some(Type::Void),
+                            _ => {}
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            
+            self.errors.push(format!("Unknown namespaced function '{}'", namespaced_name));
+            return None;
+        }
+        
+        // Handle local function calls
         if let Some(symbol) = self.analyzer.get_symbol(&call_expr.name) {
             if symbol.is_function {
                 // TODO: Check argument types against function signature
@@ -451,6 +594,10 @@ impl<'a> TypeChecker<'a> {
                 ));
                 None
             }
+        } else if self.analyzer.imported_symbols.contains_key(&call_expr.name) {
+            // Handle imported functions
+            // For now, assume they return void (this would be improved with proper metadata)
+            Some(Type::Void)
         } else {
             self.errors.push(format!(
                 "Undefined function '{}'",
@@ -487,15 +634,24 @@ impl<'a> TypeChecker<'a> {
             (Type::Array(expected_inner), Type::Array(actual_inner)) => {
                 self.types_compatible(expected_inner, actual_inner)
             }
+            (Type::Variadic(expected_inner), actual) => {
+                // Variadic types can accept the base type or arrays of the base type
+                self.types_compatible(expected_inner, actual) ||
+                self.types_compatible(&Type::Array(expected_inner.clone()), actual)
+            }
             _ => false,
         }
     }
 }
 
-// Helper function to run both semantic analysis and type checking
+// Enhanced helper function to run both semantic analysis and type checking with import support
 pub fn analyze_and_check(program: &Program) -> Result<(), Vec<String>> {
     let mut semantic_analyzer = SemanticAnalyzer::new();
     
-    // Run integrated semantic analysis and type checking
-    semantic_analyzer.analyze_with_type_checking(program)
+    // Run semantic analysis (which now includes import processing)
+    semantic_analyzer.analyze(program)?;
+    
+    // Run type checking
+    let mut type_checker = TypeChecker::new(&semantic_analyzer);
+    type_checker.check(program)
 }

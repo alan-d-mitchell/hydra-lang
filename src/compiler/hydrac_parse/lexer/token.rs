@@ -78,6 +78,10 @@ pub enum TokenType {
     RightBracket,     // ]
     Semicolon,        // ;
     Comma,            // ,
+    Dot,              // .
+    Colon,            // :
+    DoubleColon,      // ::
+    DotDotDot,        // ... (for variadic functions)
     
     // Special
     Newline,

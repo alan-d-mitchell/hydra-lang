@@ -12,8 +12,16 @@ impl Parser {
     }
     
     pub fn parse(&mut self) -> Result<Program, String> {
+        let mut imports = Vec::new();
         let mut items = Vec::new();
         
+        // Parse imports first
+        while self.check(&TokenType::Import) && !self.is_at_end() {
+            imports.push(self.parse_import()?);
+            self.skip_newlines();
+        }
+        
+        // Parse rest of program
         while !self.is_at_end() {
             // Skip newlines at top level
             if self.check(&TokenType::Newline) {
@@ -24,7 +32,33 @@ impl Parser {
             items.push(self.parse_item()?);
         }
         
-        Ok(Program { items })
+        Ok(Program { imports, items })
+    }
+    
+    fn parse_import(&mut self) -> Result<ImportStmt, String> {
+        self.consume(&TokenType::Import, "Expected 'import'")?;
+        
+        let mut path = Vec::new();
+        let mut is_wildcard = false;
+        
+        // Parse first identifier
+        let first_part = self.consume_identifier("Expected import path")?;
+        path.push(first_part);
+        
+        // Parse remaining path segments with ::
+        while self.check(&TokenType::DoubleColon) {
+            self.advance(); // consume ::
+            let part = self.consume_identifier("Expected identifier after '::'")?;
+            path.push(part);
+        }
+        
+        // Check if this is a wildcard import (just the namespace without specific function)
+        // If we only have one part or the last part looks like a namespace, it's wildcard
+        is_wildcard = path.len() <= 2; // e.g., "stdlib" or "stdlib::io"
+        
+        self.consume(&TokenType::Semicolon, "Expected ';' after import")?;
+        
+        Ok(ImportStmt { path, is_wildcard })
     }
     
     fn parse_item(&mut self) -> Result<Item, String> {
@@ -74,8 +108,17 @@ impl Parser {
         self.consume(&TokenType::LeftParen, "Expected '(' after function name")?;
         
         let mut parameters = Vec::new();
+        let mut is_variadic = false;
+        
         if !self.check(&TokenType::RightParen) {
             loop {
+                // Check for variadic parameter
+                if self.check(&TokenType::DotDotDot) {
+                    self.advance();
+                    is_variadic = true;
+                    break;
+                }
+                
                 let param_type = self.parse_type()?;
                 let param_name = self.consume_identifier("Expected parameter name")?;
                 parameters.push(Parameter {
@@ -101,6 +144,7 @@ impl Parser {
             parameters,
             return_type,
             body,
+            is_variadic,
         })
     }
     
@@ -137,6 +181,9 @@ impl Parser {
             self.advance();
             self.consume(&TokenType::RightBracket, "Expected ']' after '['")?;
             Ok(Type::Array(Box::new(base_type)))
+        } else if self.check(&TokenType::DotDotDot) {
+            self.advance();
+            Ok(Type::Variadic(Box::new(base_type)))
         } else {
             Ok(base_type)
         }
@@ -575,7 +622,7 @@ impl Parser {
     }
     
     fn parse_postfix(&mut self) -> Result<Expression, String> {
-        let mut expr = self.parse_primary()?;
+        let mut expr = self.parse_namespaced_call()?;
         
         while self.match_any(&[TokenType::Increment, TokenType::Decrement]) {
             let operator = match self.previous().token_type {
@@ -587,6 +634,43 @@ impl Parser {
                 operator,
                 operand: Box::new(expr),
             });
+        }
+        
+        Ok(expr)
+    }
+    
+    fn parse_namespaced_call(&mut self) -> Result<Expression, String> {
+        let mut expr = self.parse_primary()?;
+        
+        // Handle namespaced method calls: expr::method()
+        while self.check(&TokenType::DoubleColon) {
+            self.advance(); // consume ::
+            let method = self.consume_identifier("Expected method name after '::'")?;
+            
+            if self.check(&TokenType::LeftParen) {
+                self.advance(); // consume (
+                let mut arguments = Vec::new();
+                
+                if !self.check(&TokenType::RightParen) {
+                    loop {
+                        arguments.push(self.parse_expression()?);
+                        if !self.check(&TokenType::Comma) {
+                            break;
+                        }
+                        self.advance();
+                    }
+                }
+                
+                self.consume(&TokenType::RightParen, "Expected ')' after arguments")?;
+                
+                expr = Expression::NamespacedCall(NamespacedCallExpr {
+                    object: Box::new(expr),
+                    method,
+                    arguments,
+                });
+            } else {
+                return Err(format!("Expected '(' after method name '{}' at line {}", method, self.peek().line));
+            }
         }
         
         Ok(expr)
@@ -616,6 +700,13 @@ impl Parser {
             TokenType::StringLiteral(s) => {
                 let value = s.clone();
                 self.advance();
+                
+                // Check if this is a format string (contains % placeholders)
+                if value.contains('%') {
+                    // This might be a format string, but for now treat as regular string
+                    // Format string parsing would happen in semantic analysis
+                }
+                
                 Ok(Expression::Literal(Literal::String(value)))
             },
             TokenType::CharLiteral(c) => {
@@ -627,8 +718,54 @@ impl Parser {
                 let name = name.clone();
                 self.advance();
                 
-                // Check for function call
-                if self.check(&TokenType::LeftParen) {
+                // Check for namespaced function call
+                if self.check(&TokenType::DoubleColon) {
+                    self.advance(); // consume ::
+                    
+                    // Parse the rest of the namespace path
+                    let mut namespace = vec![name];
+                    
+                    while !self.check(&TokenType::LeftParen) {
+                        let part = self.consume_identifier("Expected identifier in namespace path")?;
+                        namespace.push(part);
+                        
+                        if self.check(&TokenType::DoubleColon) {
+                            self.advance(); // consume ::
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    // The last part is the function name
+                    let function_name = namespace.pop().unwrap();
+                    
+                    if self.check(&TokenType::LeftParen) {
+                        self.advance();
+                        let mut arguments = Vec::new();
+                        
+                        if !self.check(&TokenType::RightParen) {
+                            loop {
+                                arguments.push(self.parse_expression()?);
+                                if !self.check(&TokenType::Comma) {
+                                    break;
+                                }
+                                self.advance();
+                            }
+                        }
+                        
+                        self.consume(&TokenType::RightParen, "Expected ')' after arguments")?;
+                        
+                        Ok(Expression::FunctionCall(FunctionCallExpr {
+                            name: function_name,
+                            namespace: if namespace.is_empty() { None } else { Some(namespace) },
+                            arguments,
+                        }))
+                    } else {
+                        Err(format!("Expected '(' after namespaced function name at line {}", self.peek().line))
+                    }
+                }
+                // Check for regular function call
+                else if self.check(&TokenType::LeftParen) {
                     self.advance();
                     let mut arguments = Vec::new();
                     
@@ -646,6 +783,7 @@ impl Parser {
                     
                     Ok(Expression::FunctionCall(FunctionCallExpr {
                         name,
+                        namespace: None,
                         arguments,
                     }))
                 } else {
@@ -660,22 +798,69 @@ impl Parser {
             },
             TokenType::LeftBrace => {
                 self.advance();
-                let mut elements = Vec::new();
                 
-                if !self.check(&TokenType::RightBrace) {
-                    loop {
-                        elements.push(self.parse_expression()?);
-                        if !self.check(&TokenType::Comma) {
-                            break;
+                // Check if this is array initialization syntax: {type, size}
+                if self.is_array_init_syntax() {
+                    let element_type = self.parse_type()?;
+                    self.consume(&TokenType::Comma, "Expected ',' after element type in array initialization")?;
+                    let size = self.parse_expression()?;
+                    self.consume(&TokenType::RightBrace, "Expected '}' after array initialization")?;
+                    
+                    Ok(Expression::ArrayInit(ArrayInitExpr {
+                        element_type,
+                        size: Box::new(size),
+                    }))
+                } else {
+                    // Regular array literal
+                    let mut elements = Vec::new();
+                    
+                    if !self.check(&TokenType::RightBrace) {
+                        loop {
+                            elements.push(self.parse_expression()?);
+                            if !self.check(&TokenType::Comma) {
+                                break;
+                            }
+                            self.advance();
                         }
-                        self.advance();
                     }
+                    
+                    self.consume(&TokenType::RightBrace, "Expected '}' after array elements")?;
+                    Ok(Expression::Array(ArrayExpr { elements }))
                 }
-                
-                self.consume(&TokenType::RightBrace, "Expected '}' after array elements")?;
-                Ok(Expression::Array(ArrayExpr { elements }))
             },
             _ => Err(format!("Unexpected token {:?} at line {}", self.peek().token_type, self.peek().line)),
+        }
+    }
+    
+    fn is_array_init_syntax(&self) -> bool {
+        // Look ahead to see if this looks like {type, expression}
+        // This is a simplified check - in a real implementation you'd want more sophisticated lookahead
+        let mut i = 0;
+        let mut brace_count = 1;
+        
+        while self.current + i < self.tokens.len() && brace_count > 0 {
+            match &self.tokens[self.current + i].token_type {
+                TokenType::LeftBrace => brace_count += 1,
+                TokenType::RightBrace => brace_count -= 1,
+                TokenType::IntType | TokenType::FloatType | TokenType::StringType |
+                TokenType::CharType | TokenType::BooleanType => {
+                    // Found a type token, check if followed by comma
+                    if self.current + i + 1 < self.tokens.len() {
+                        if let TokenType::Comma = self.tokens[self.current + i + 1].token_type {
+                            return true;
+                        }
+                    }
+                },
+                _ => {}
+            }
+            i += 1;
+        }
+        false
+    }
+    
+    fn skip_newlines(&mut self) {
+        while self.check(&TokenType::Newline) && !self.is_at_end() {
+            self.advance();
         }
     }
     
