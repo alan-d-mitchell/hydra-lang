@@ -1,0 +1,624 @@
+=== HYDRA LANGUAGE COMPILER v2.0 ===
+✨ Now with Import & Namespace Support! ✨
+Compiling file: src/tests/import.hydra
+File size: 4419 bytes
+
+=== PHASE 1: LEXICAL ANALYSIS (TOKENIZING) ===
+✅ Tokenization successful!
+Tokens found: 543
+🆕 New language features detected:
+   📦 Import statements: 4
+   🔗 Namespace references: 24
+   📋 Variadic functions: 1
+
+Debug: All tokens:
+    0: Token { token_type: Newline, lexeme: "\n", line: 1, column: 2 }
+    1: Token { token_type: Import, lexeme: "import", line: 2, column: 0 }
+    2: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 2, column: 7 }
+    3: Token { token_type: DoubleColon, lexeme: "::", line: 2, column: 13 }
+    4: Token { token_type: Identifier("io"), lexeme: "io", line: 2, column: 15 }
+    5: Token { token_type: Semicolon, lexeme: ";", line: 2, column: 17 }
+    6: Token { token_type: Newline, lexeme: "\n", line: 2, column: 19 }
+    7: Token { token_type: Import, lexeme: "import", line: 3, column: 0 }
+    8: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 3, column: 7 }
+    9: Token { token_type: DoubleColon, lexeme: "::", line: 3, column: 13 }
+   10: Token { token_type: StringType, lexeme: "string", line: 3, column: 15 }
+   11: Token { token_type: DoubleColon, lexeme: "::", line: 3, column: 21 }
+   12: Token { token_type: Identifier("toCharArray"), lexeme: "toCharArray", line: 3, column: 23 }
+   13: Token { token_type: Semicolon, lexeme: ";", line: 3, column: 34 }
+   14: Token { token_type: Newline, lexeme: "\n", line: 3, column: 36 }
+   15: Token { token_type: Import, lexeme: "import", line: 4, column: 0 }
+   16: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 4, column: 7 }
+   17: Token { token_type: DoubleColon, lexeme: "::", line: 4, column: 13 }
+   18: Token { token_type: Identifier("array"), lexeme: "array", line: 4, column: 15 }
+   19: Token { token_type: Semicolon, lexeme: ";", line: 4, column: 20 }
+   20: Token { token_type: Newline, lexeme: "\n", line: 4, column: 22 }
+   21: Token { token_type: Import, lexeme: "import", line: 5, column: 0 }
+   22: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 5, column: 7 }
+   23: Token { token_type: DoubleColon, lexeme: "::", line: 5, column: 13 }
+   24: Token { token_type: Identifier("math"), lexeme: "math", line: 5, column: 15 }
+   25: Token { token_type: DoubleColon, lexeme: "::", line: 5, column: 19 }
+   26: Token { token_type: Identifier("sqrt"), lexeme: "sqrt", line: 5, column: 21 }
+   27: Token { token_type: Semicolon, lexeme: ";", line: 5, column: 25 }
+   28: Token { token_type: Newline, lexeme: "\n", line: 5, column: 27 }
+   29: Token { token_type: Newline, lexeme: "\n", line: 6, column: 1 }
+   30: Token { token_type: Global, lexeme: "global", line: 7, column: 0 }
+   31: Token { token_type: Const, lexeme: "const", line: 7, column: 7 }
+   32: Token { token_type: IntType, lexeme: "int", line: 7, column: 13 }
+   33: Token { token_type: Identifier("BUFFER_SIZE"), lexeme: "BUFFER_SIZE", line: 7, column: 17 }
+   34: Token { token_type: Assign, lexeme: "=", line: 7, column: 29 }
+   35: Token { token_type: IntLiteral(1024), lexeme: "1024", line: 7, column: 31 }
+   36: Token { token_type: Semicolon, lexeme: ";", line: 7, column: 35 }
+   37: Token { token_type: Newline, lexeme: "\n", line: 7, column: 37 }
+   38: Token { token_type: Global, lexeme: "global", line: 8, column: 0 }
+   39: Token { token_type: StringType, lexeme: "string", line: 8, column: 7 }
+   40: Token { token_type: Identifier("APP_NAME"), lexeme: "APP_NAME", line: 8, column: 14 }
+   41: Token { token_type: Assign, lexeme: "=", line: 8, column: 23 }
+   42: Token { token_type: StringLiteral("Hydra Demo App"), lexeme: "\"Hydra Demo App\"", line: 8, column: 25 }
+   43: Token { token_type: Semicolon, lexeme: ";", line: 8, column: 41 }
+   44: Token { token_type: Newline, lexeme: "\n", line: 8, column: 43 }
+   45: Token { token_type: Newline, lexeme: "\n", line: 9, column: 1 }
+   46: Token { token_type: Newline, lexeme: "\n", line: 10, column: 54 }
+   47: Token { token_type: Func, lexeme: "func", line: 11, column: 0 }
+   48: Token { token_type: Identifier("createBuffers"), lexeme: "createBuffers", line: 11, column: 5 }
+   49: Token { token_type: LeftParen, lexeme: "(", line: 11, column: 18 }
+   50: Token { token_type: RightParen, lexeme: ")", line: 11, column: 19 }
+   51: Token { token_type: Arrow, lexeme: "->", line: 11, column: 21 }
+   52: Token { token_type: VoidType, lexeme: "void", line: 11, column: 24 }
+   53: Token { token_type: LeftBrace, lexeme: "{", line: 11, column: 29 }
+   54: Token { token_type: Newline, lexeme: "\n", line: 11, column: 31 }
+   55: Token { token_type: Newline, lexeme: "\n", line: 12, column: 53 }
+   56: Token { token_type: IntType, lexeme: "int", line: 13, column: 4 }
+   57: Token { token_type: LeftBracket, lexeme: "[", line: 13, column: 7 }
+   58: Token { token_type: RightBracket, lexeme: "]", line: 13, column: 8 }
+   59: Token { token_type: Identifier("numbers"), lexeme: "numbers", line: 13, column: 10 }
+   60: Token { token_type: Assign, lexeme: "=", line: 13, column: 18 }
+   61: Token { token_type: LeftBrace, lexeme: "{", line: 13, column: 20 }
+   62: Token { token_type: IntType, lexeme: "int", line: 13, column: 21 }
+   63: Token { token_type: Comma, lexeme: ",", line: 13, column: 24 }
+   64: Token { token_type: IntLiteral(10), lexeme: "10", line: 13, column: 26 }
+   65: Token { token_type: RightBrace, lexeme: "}", line: 13, column: 28 }
+   66: Token { token_type: Semicolon, lexeme: ";", line: 13, column: 29 }
+   67: Token { token_type: Newline, lexeme: "\n", line: 13, column: 73 }
+   68: Token { token_type: CharType, lexeme: "char", line: 14, column: 4 }
+   69: Token { token_type: LeftBracket, lexeme: "[", line: 14, column: 8 }
+   70: Token { token_type: RightBracket, lexeme: "]", line: 14, column: 9 }
+   71: Token { token_type: Identifier("buffer"), lexeme: "buffer", line: 14, column: 11 }
+   72: Token { token_type: Assign, lexeme: "=", line: 14, column: 18 }
+   73: Token { token_type: LeftBrace, lexeme: "{", line: 14, column: 20 }
+   74: Token { token_type: CharType, lexeme: "char", line: 14, column: 21 }
+   75: Token { token_type: Comma, lexeme: ",", line: 14, column: 25 }
+   76: Token { token_type: Identifier("BUFFER_SIZE"), lexeme: "BUFFER_SIZE", line: 14, column: 27 }
+   77: Token { token_type: RightBrace, lexeme: "}", line: 14, column: 38 }
+   78: Token { token_type: Semicolon, lexeme: ";", line: 14, column: 39 }
+   79: Token { token_type: Newline, lexeme: "\n", line: 14, column: 84 }
+   80: Token { token_type: FloatType, lexeme: "float", line: 15, column: 4 }
+   81: Token { token_type: LeftBracket, lexeme: "[", line: 15, column: 9 }
+   82: Token { token_type: RightBracket, lexeme: "]", line: 15, column: 10 }
+   83: Token { token_type: Identifier("coords"), lexeme: "coords", line: 15, column: 12 }
+   84: Token { token_type: Assign, lexeme: "=", line: 15, column: 19 }
+   85: Token { token_type: LeftBrace, lexeme: "{", line: 15, column: 21 }
+   86: Token { token_type: FloatType, lexeme: "float", line: 15, column: 22 }
+   87: Token { token_type: Comma, lexeme: ",", line: 15, column: 27 }
+   88: Token { token_type: IntLiteral(3), lexeme: "3", line: 15, column: 29 }
+   89: Token { token_type: RightBrace, lexeme: "}", line: 15, column: 30 }
+   90: Token { token_type: Semicolon, lexeme: ";", line: 15, column: 31 }
+   91: Token { token_type: Newline, lexeme: "\n", line: 15, column: 70 }
+   92: Token { token_type: Newline, lexeme: "\n", line: 16, column: 5 }
+   93: Token { token_type: Newline, lexeme: "\n", line: 17, column: 52 }
+   94: Token { token_type: StringType, lexeme: "string", line: 18, column: 4 }
+   95: Token { token_type: LeftBracket, lexeme: "[", line: 18, column: 10 }
+   96: Token { token_type: RightBracket, lexeme: "]", line: 18, column: 11 }
+   97: Token { token_type: Identifier("names"), lexeme: "names", line: 18, column: 13 }
+   98: Token { token_type: Assign, lexeme: "=", line: 18, column: 19 }
+   99: Token { token_type: LeftBrace, lexeme: "{", line: 18, column: 21 }
+  100: Token { token_type: StringLiteral("Alice"), lexeme: "\"Alice\"", line: 18, column: 22 }
+  101: Token { token_type: Comma, lexeme: ",", line: 18, column: 29 }
+  102: Token { token_type: StringLiteral("Bob"), lexeme: "\"Bob\"", line: 18, column: 31 }
+  103: Token { token_type: Comma, lexeme: ",", line: 18, column: 36 }
+  104: Token { token_type: StringLiteral("Charlie"), lexeme: "\"Charlie\"", line: 18, column: 38 }
+  105: Token { token_type: RightBrace, lexeme: "}", line: 18, column: 47 }
+  106: Token { token_type: Semicolon, lexeme: ";", line: 18, column: 48 }
+  107: Token { token_type: Newline, lexeme: "\n", line: 18, column: 50 }
+  108: Token { token_type: IntType, lexeme: "int", line: 19, column: 4 }
+  109: Token { token_type: LeftBracket, lexeme: "[", line: 19, column: 7 }
+  110: Token { token_type: RightBracket, lexeme: "]", line: 19, column: 8 }
+  111: Token { token_type: Identifier("primes"), lexeme: "primes", line: 19, column: 10 }
+  112: Token { token_type: Assign, lexeme: "=", line: 19, column: 17 }
+  113: Token { token_type: LeftBrace, lexeme: "{", line: 19, column: 19 }
+  114: Token { token_type: IntLiteral(2), lexeme: "2", line: 19, column: 20 }
+  115: Token { token_type: Comma, lexeme: ",", line: 19, column: 21 }
+  116: Token { token_type: IntLiteral(3), lexeme: "3", line: 19, column: 23 }
+  117: Token { token_type: Comma, lexeme: ",", line: 19, column: 24 }
+  118: Token { token_type: IntLiteral(5), lexeme: "5", line: 19, column: 26 }
+  119: Token { token_type: Comma, lexeme: ",", line: 19, column: 27 }
+  120: Token { token_type: IntLiteral(7), lexeme: "7", line: 19, column: 29 }
+  121: Token { token_type: Comma, lexeme: ",", line: 19, column: 30 }
+  122: Token { token_type: IntLiteral(11), lexeme: "11", line: 19, column: 32 }
+  123: Token { token_type: RightBrace, lexeme: "}", line: 19, column: 34 }
+  124: Token { token_type: Semicolon, lexeme: ";", line: 19, column: 35 }
+  125: Token { token_type: Newline, lexeme: "\n", line: 19, column: 37 }
+  126: Token { token_type: Newline, lexeme: "\n", line: 20, column: 5 }
+  127: Token { token_type: Newline, lexeme: "\n", line: 21, column: 78 }
+  128: Token { token_type: IntType, lexeme: "int", line: 22, column: 4 }
+  129: Token { token_type: Identifier("nameCount"), lexeme: "nameCount", line: 22, column: 8 }
+  130: Token { token_type: Assign, lexeme: "=", line: 22, column: 18 }
+  131: Token { token_type: Identifier("names"), lexeme: "names", line: 22, column: 20 }
+  132: Token { token_type: DoubleColon, lexeme: "::", line: 22, column: 25 }
+  133: Token { token_type: Identifier("length"), lexeme: "length", line: 22, column: 27 }
+  134: Token { token_type: LeftParen, lexeme: "(", line: 22, column: 33 }
+  135: Token { token_type: RightParen, lexeme: ")", line: 22, column: 34 }
+  136: Token { token_type: Semicolon, lexeme: ";", line: 22, column: 35 }
+  137: Token { token_type: Newline, lexeme: "\n", line: 22, column: 86 }
+  138: Token { token_type: StringType, lexeme: "string", line: 23, column: 4 }
+  139: Token { token_type: Identifier("nameStr"), lexeme: "nameStr", line: 23, column: 11 }
+  140: Token { token_type: Assign, lexeme: "=", line: 23, column: 19 }
+  141: Token { token_type: Identifier("names"), lexeme: "names", line: 23, column: 21 }
+  142: Token { token_type: DoubleColon, lexeme: "::", line: 23, column: 26 }
+  143: Token { token_type: Identifier("toString"), lexeme: "toString", line: 23, column: 28 }
+  144: Token { token_type: LeftParen, lexeme: "(", line: 23, column: 36 }
+  145: Token { token_type: RightParen, lexeme: ")", line: 23, column: 37 }
+  146: Token { token_type: Semicolon, lexeme: ";", line: 23, column: 38 }
+  147: Token { token_type: Newline, lexeme: "\n", line: 23, column: 88 }
+  148: Token { token_type: Newline, lexeme: "\n", line: 24, column: 5 }
+  149: Token { token_type: Newline, lexeme: "\n", line: 25, column: 36 }
+  150: Token { token_type: StringType, lexeme: "string", line: 26, column: 4 }
+  151: Token { token_type: Identifier("greeting"), lexeme: "greeting", line: 26, column: 11 }
+  152: Token { token_type: Assign, lexeme: "=", line: 26, column: 20 }
+  153: Token { token_type: StringLiteral("Hello World!"), lexeme: "\"Hello World!\"", line: 26, column: 22 }
+  154: Token { token_type: Semicolon, lexeme: ";", line: 26, column: 36 }
+  155: Token { token_type: Newline, lexeme: "\n", line: 26, column: 38 }
+  156: Token { token_type: IntType, lexeme: "int", line: 27, column: 4 }
+  157: Token { token_type: Identifier("greetingLen"), lexeme: "greetingLen", line: 27, column: 8 }
+  158: Token { token_type: Assign, lexeme: "=", line: 27, column: 20 }
+  159: Token { token_type: Identifier("greeting"), lexeme: "greeting", line: 27, column: 22 }
+  160: Token { token_type: DoubleColon, lexeme: "::", line: 27, column: 30 }
+  161: Token { token_type: Identifier("length"), lexeme: "length", line: 27, column: 32 }
+  162: Token { token_type: LeftParen, lexeme: "(", line: 27, column: 38 }
+  163: Token { token_type: RightParen, lexeme: ")", line: 27, column: 39 }
+  164: Token { token_type: Semicolon, lexeme: ";", line: 27, column: 40 }
+  165: Token { token_type: Newline, lexeme: "\n", line: 27, column: 90 }
+  166: Token { token_type: CharType, lexeme: "char", line: 28, column: 4 }
+  167: Token { token_type: LeftBracket, lexeme: "[", line: 28, column: 8 }
+  168: Token { token_type: RightBracket, lexeme: "]", line: 28, column: 9 }
+  169: Token { token_type: Identifier("greetingChars"), lexeme: "greetingChars", line: 28, column: 11 }
+  170: Token { token_type: Assign, lexeme: "=", line: 28, column: 25 }
+  171: Token { token_type: Identifier("greeting"), lexeme: "greeting", line: 28, column: 27 }
+  172: Token { token_type: DoubleColon, lexeme: "::", line: 28, column: 35 }
+  173: Token { token_type: Identifier("toCharArray"), lexeme: "toCharArray", line: 28, column: 37 }
+  174: Token { token_type: LeftParen, lexeme: "(", line: 28, column: 48 }
+  175: Token { token_type: RightParen, lexeme: ")", line: 28, column: 49 }
+  176: Token { token_type: Semicolon, lexeme: ";", line: 28, column: 50 }
+  177: Token { token_type: Newline, lexeme: "\n", line: 28, column: 100 }
+  178: Token { token_type: StringType, lexeme: "string", line: 29, column: 4 }
+  179: Token { token_type: Identifier("upperGreeting"), lexeme: "upperGreeting", line: 29, column: 11 }
+  180: Token { token_type: Assign, lexeme: "=", line: 29, column: 25 }
+  181: Token { token_type: Identifier("greeting"), lexeme: "greeting", line: 29, column: 27 }
+  182: Token { token_type: DoubleColon, lexeme: "::", line: 29, column: 35 }
+  183: Token { token_type: Identifier("toUpperCase"), lexeme: "toUpperCase", line: 29, column: 37 }
+  184: Token { token_type: LeftParen, lexeme: "(", line: 29, column: 48 }
+  185: Token { token_type: RightParen, lexeme: ")", line: 29, column: 49 }
+  186: Token { token_type: Semicolon, lexeme: ";", line: 29, column: 50 }
+  187: Token { token_type: Newline, lexeme: "\n", line: 29, column: 100 }
+  188: Token { token_type: Newline, lexeme: "\n", line: 30, column: 5 }
+  189: Token { token_type: Newline, lexeme: "\n", line: 31, column: 26 }
+  190: Token { token_type: IntType, lexeme: "int", line: 32, column: 4 }
+  191: Token { token_type: Identifier("bufferLen"), lexeme: "bufferLen", line: 32, column: 8 }
+  192: Token { token_type: Assign, lexeme: "=", line: 32, column: 18 }
+  193: Token { token_type: Identifier("buffer"), lexeme: "buffer", line: 32, column: 20 }
+  194: Token { token_type: DoubleColon, lexeme: "::", line: 32, column: 26 }
+  195: Token { token_type: Identifier("length"), lexeme: "length", line: 32, column: 28 }
+  196: Token { token_type: LeftParen, lexeme: "(", line: 32, column: 34 }
+  197: Token { token_type: RightParen, lexeme: ")", line: 32, column: 35 }
+  198: Token { token_type: Semicolon, lexeme: ";", line: 32, column: 36 }
+  199: Token { token_type: Newline, lexeme: "\n", line: 32, column: 87 }
+  200: Token { token_type: StringType, lexeme: "string", line: 33, column: 4 }
+  201: Token { token_type: Identifier("bufferStr"), lexeme: "bufferStr", line: 33, column: 11 }
+  202: Token { token_type: Assign, lexeme: "=", line: 33, column: 21 }
+  203: Token { token_type: Identifier("buffer"), lexeme: "buffer", line: 33, column: 23 }
+  204: Token { token_type: DoubleColon, lexeme: "::", line: 33, column: 29 }
+  205: Token { token_type: Identifier("toString"), lexeme: "toString", line: 33, column: 31 }
+  206: Token { token_type: LeftParen, lexeme: "(", line: 33, column: 39 }
+  207: Token { token_type: RightParen, lexeme: ")", line: 33, column: 40 }
+  208: Token { token_type: Semicolon, lexeme: ";", line: 33, column: 41 }
+  209: Token { token_type: Newline, lexeme: "\n", line: 33, column: 89 }
+  210: Token { token_type: RightBrace, lexeme: "}", line: 34, column: 0 }
+  211: Token { token_type: Newline, lexeme: "\n", line: 34, column: 2 }
+  212: Token { token_type: Newline, lexeme: "\n", line: 35, column: 1 }
+  213: Token { token_type: Newline, lexeme: "\n", line: 36, column: 71 }
+  214: Token { token_type: Func, lexeme: "func", line: 37, column: 0 }
+  215: Token { token_type: Identifier("logger"), lexeme: "logger", line: 37, column: 5 }
+  216: Token { token_type: LeftParen, lexeme: "(", line: 37, column: 11 }
+  217: Token { token_type: StringType, lexeme: "string", line: 37, column: 12 }
+  218: Token { token_type: Identifier("level"), lexeme: "level", line: 37, column: 19 }
+  219: Token { token_type: Comma, lexeme: ",", line: 37, column: 24 }
+  220: Token { token_type: StringType, lexeme: "string", line: 37, column: 26 }
+  221: Token { token_type: Identifier("format"), lexeme: "format", line: 37, column: 33 }
+  222: Token { token_type: Comma, lexeme: ",", line: 37, column: 39 }
+  223: Token { token_type: DotDotDot, lexeme: "...", line: 37, column: 41 }
+  224: Token { token_type: RightParen, lexeme: ")", line: 37, column: 44 }
+  225: Token { token_type: Arrow, lexeme: "->", line: 37, column: 46 }
+  226: Token { token_type: VoidType, lexeme: "void", line: 37, column: 49 }
+  227: Token { token_type: LeftBrace, lexeme: "{", line: 37, column: 54 }
+  228: Token { token_type: Newline, lexeme: "\n", line: 37, column: 56 }
+  229: Token { token_type: Newline, lexeme: "\n", line: 38, column: 66 }
+  230: Token { token_type: Newline, lexeme: "\n", line: 39, column: 54 }
+  231: Token { token_type: RightBrace, lexeme: "}", line: 40, column: 0 }
+  232: Token { token_type: Newline, lexeme: "\n", line: 40, column: 2 }
+  233: Token { token_type: Newline, lexeme: "\n", line: 41, column: 1 }
+  234: Token { token_type: Newline, lexeme: "\n", line: 42, column: 44 }
+  235: Token { token_type: Func, lexeme: "func", line: 43, column: 0 }
+  236: Token { token_type: Identifier("mathDemo"), lexeme: "mathDemo", line: 43, column: 5 }
+  237: Token { token_type: LeftParen, lexeme: "(", line: 43, column: 13 }
+  238: Token { token_type: RightParen, lexeme: ")", line: 43, column: 14 }
+  239: Token { token_type: Arrow, lexeme: "->", line: 43, column: 16 }
+  240: Token { token_type: VoidType, lexeme: "void", line: 43, column: 19 }
+  241: Token { token_type: LeftBrace, lexeme: "{", line: 43, column: 24 }
+  242: Token { token_type: Newline, lexeme: "\n", line: 43, column: 26 }
+  243: Token { token_type: FloatType, lexeme: "float", line: 44, column: 4 }
+  244: Token { token_type: Identifier("x"), lexeme: "x", line: 44, column: 10 }
+  245: Token { token_type: Assign, lexeme: "=", line: 44, column: 12 }
+  246: Token { token_type: FloatLiteral(16.0), lexeme: "16.0", line: 44, column: 14 }
+  247: Token { token_type: Semicolon, lexeme: ";", line: 44, column: 18 }
+  248: Token { token_type: Newline, lexeme: "\n", line: 44, column: 20 }
+  249: Token { token_type: FloatType, lexeme: "float", line: 45, column: 4 }
+  250: Token { token_type: Identifier("sqrtResult"), lexeme: "sqrtResult", line: 45, column: 10 }
+  251: Token { token_type: Assign, lexeme: "=", line: 45, column: 21 }
+  252: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 45, column: 23 }
+  253: Token { token_type: DoubleColon, lexeme: "::", line: 45, column: 29 }
+  254: Token { token_type: Identifier("math"), lexeme: "math", line: 45, column: 31 }
+  255: Token { token_type: DoubleColon, lexeme: "::", line: 45, column: 35 }
+  256: Token { token_type: Identifier("sqrt"), lexeme: "sqrt", line: 45, column: 37 }
+  257: Token { token_type: LeftParen, lexeme: "(", line: 45, column: 41 }
+  258: Token { token_type: Identifier("x"), lexeme: "x", line: 45, column: 42 }
+  259: Token { token_type: RightParen, lexeme: ")", line: 45, column: 43 }
+  260: Token { token_type: Semicolon, lexeme: ";", line: 45, column: 44 }
+  261: Token { token_type: Newline, lexeme: "\n", line: 45, column: 86 }
+  262: Token { token_type: Newline, lexeme: "\n", line: 46, column: 5 }
+  263: Token { token_type: StringType, lexeme: "string", line: 47, column: 4 }
+  264: Token { token_type: Identifier("message"), lexeme: "message", line: 47, column: 11 }
+  265: Token { token_type: Assign, lexeme: "=", line: 47, column: 19 }
+  266: Token { token_type: StringLiteral("Computing square root"), lexeme: "\"Computing square root\"", line: 47, column: 21 }
+  267: Token { token_type: Semicolon, lexeme: ";", line: 47, column: 44 }
+  268: Token { token_type: Newline, lexeme: "\n", line: 47, column: 46 }
+  269: Token { token_type: CharType, lexeme: "char", line: 48, column: 4 }
+  270: Token { token_type: LeftBracket, lexeme: "[", line: 48, column: 8 }
+  271: Token { token_type: RightBracket, lexeme: "]", line: 48, column: 9 }
+  272: Token { token_type: Identifier("messageChars"), lexeme: "messageChars", line: 48, column: 11 }
+  273: Token { token_type: Assign, lexeme: "=", line: 48, column: 24 }
+  274: Token { token_type: Identifier("stdlib"), lexeme: "stdlib", line: 48, column: 26 }
+  275: Token { token_type: DoubleColon, lexeme: "::", line: 48, column: 32 }
+  276: Token { token_type: StringType, lexeme: "string", line: 48, column: 34 }
+  277: Token { token_type: DoubleColon, lexeme: "::", line: 48, column: 40 }
+  278: Token { token_type: Identifier("toCharArray"), lexeme: "toCharArray", line: 48, column: 42 }
+  279: Token { token_type: LeftParen, lexeme: "(", line: 48, column: 53 }
+  280: Token { token_type: Identifier("message"), lexeme: "message", line: 48, column: 54 }
+  281: Token { token_type: RightParen, lexeme: ")", line: 48, column: 61 }
+  282: Token { token_type: Semicolon, lexeme: ";", line: 48, column: 62 }
+  283: Token { token_type: Newline, lexeme: "\n", line: 48, column: 64 }
+  284: Token { token_type: Newline, lexeme: "\n", line: 49, column: 5 }
+  285: Token { token_type: Newline, lexeme: "\n", line: 50, column: 62 }
+  286: Token { token_type: Newline, lexeme: "\n", line: 51, column: 55 }
+  287: Token { token_type: RightBrace, lexeme: "}", line: 52, column: 0 }
+  288: Token { token_type: Newline, lexeme: "\n", line: 52, column: 2 }
+  289: Token { token_type: Newline, lexeme: "\n", line: 53, column: 1 }
+  290: Token { token_type: Newline, lexeme: "\n", line: 54, column: 60 }
+  291: Token { token_type: Func, lexeme: "func", line: 55, column: 0 }
+  292: Token { token_type: Identifier("processText"), lexeme: "processText", line: 55, column: 5 }
+  293: Token { token_type: LeftParen, lexeme: "(", line: 55, column: 16 }
+  294: Token { token_type: StringType, lexeme: "string", line: 55, column: 17 }
+  295: Token { token_type: Identifier("input"), lexeme: "input", line: 55, column: 24 }
+  296: Token { token_type: RightParen, lexeme: ")", line: 55, column: 29 }
+  297: Token { token_type: Arrow, lexeme: "->", line: 55, column: 31 }
+  298: Token { token_type: StringType, lexeme: "string", line: 55, column: 34 }
+  299: Token { token_type: LeftBrace, lexeme: "{", line: 55, column: 41 }
+  300: Token { token_type: Newline, lexeme: "\n", line: 55, column: 43 }
+  301: Token { token_type: Newline, lexeme: "\n", line: 56, column: 53 }
+  302: Token { token_type: StringType, lexeme: "string", line: 57, column: 4 }
+  303: Token { token_type: Identifier("processed"), lexeme: "processed", line: 57, column: 11 }
+  304: Token { token_type: Assign, lexeme: "=", line: 57, column: 21 }
+  305: Token { token_type: Identifier("input"), lexeme: "input", line: 57, column: 23 }
+  306: Token { token_type: DoubleColon, lexeme: "::", line: 57, column: 28 }
+  307: Token { token_type: Identifier("toLowerCase"), lexeme: "toLowerCase", line: 57, column: 30 }
+  308: Token { token_type: LeftParen, lexeme: "(", line: 57, column: 41 }
+  309: Token { token_type: RightParen, lexeme: ")", line: 57, column: 42 }
+  310: Token { token_type: DoubleColon, lexeme: "::", line: 57, column: 43 }
+  311: Token { token_type: Identifier("toUpperCase"), lexeme: "toUpperCase", line: 57, column: 45 }
+  312: Token { token_type: LeftParen, lexeme: "(", line: 57, column: 56 }
+  313: Token { token_type: RightParen, lexeme: ")", line: 57, column: 57 }
+  314: Token { token_type: Semicolon, lexeme: ";", line: 57, column: 58 }
+  315: Token { token_type: Newline, lexeme: "\n", line: 57, column: 60 }
+  316: Token { token_type: Newline, lexeme: "\n", line: 58, column: 5 }
+  317: Token { token_type: Newline, lexeme: "\n", line: 59, column: 22 }
+  318: Token { token_type: Newline, lexeme: "\n", line: 60, column: 50 }
+  319: Token { token_type: Newline, lexeme: "\n", line: 61, column: 54 }
+  320: Token { token_type: Newline, lexeme: "\n", line: 62, column: 5 }
+  321: Token { token_type: Return, lexeme: "return", line: 63, column: 4 }
+  322: Token { token_type: Identifier("processed"), lexeme: "processed", line: 63, column: 11 }
+  323: Token { token_type: Semicolon, lexeme: ";", line: 63, column: 20 }
+  324: Token { token_type: Newline, lexeme: "\n", line: 63, column: 22 }
+  325: Token { token_type: RightBrace, lexeme: "}", line: 64, column: 0 }
+  326: Token { token_type: Newline, lexeme: "\n", line: 64, column: 2 }
+  327: Token { token_type: Newline, lexeme: "\n", line: 65, column: 1 }
+  328: Token { token_type: Newline, lexeme: "\n", line: 66, column: 37 }
+  329: Token { token_type: Func, lexeme: "func", line: 67, column: 0 }
+  330: Token { token_type: Identifier("analyzeData"), lexeme: "analyzeData", line: 67, column: 5 }
+  331: Token { token_type: LeftParen, lexeme: "(", line: 67, column: 16 }
+  332: Token { token_type: IntType, lexeme: "int", line: 67, column: 17 }
+  333: Token { token_type: LeftBracket, lexeme: "[", line: 67, column: 20 }
+  334: Token { token_type: RightBracket, lexeme: "]", line: 67, column: 21 }
+  335: Token { token_type: Identifier("data"), lexeme: "data", line: 67, column: 23 }
+  336: Token { token_type: RightParen, lexeme: ")", line: 67, column: 27 }
+  337: Token { token_type: Arrow, lexeme: "->", line: 67, column: 29 }
+  338: Token { token_type: VoidType, lexeme: "void", line: 67, column: 32 }
+  339: Token { token_type: LeftBrace, lexeme: "{", line: 67, column: 37 }
+  340: Token { token_type: Newline, lexeme: "\n", line: 67, column: 39 }
+  341: Token { token_type: IntType, lexeme: "int", line: 68, column: 4 }
+  342: Token { token_type: Identifier("dataLength"), lexeme: "dataLength", line: 68, column: 8 }
+  343: Token { token_type: Assign, lexeme: "=", line: 68, column: 19 }
+  344: Token { token_type: Identifier("data"), lexeme: "data", line: 68, column: 21 }
+  345: Token { token_type: DoubleColon, lexeme: "::", line: 68, column: 25 }
+  346: Token { token_type: Identifier("length"), lexeme: "length", line: 68, column: 27 }
+  347: Token { token_type: LeftParen, lexeme: "(", line: 68, column: 33 }
+  348: Token { token_type: RightParen, lexeme: ")", line: 68, column: 34 }
+  349: Token { token_type: Semicolon, lexeme: ";", line: 68, column: 35 }
+  350: Token { token_type: Newline, lexeme: "\n", line: 68, column: 37 }
+  351: Token { token_type: Newline, lexeme: "\n", line: 69, column: 5 }
+  352: Token { token_type: Newline, lexeme: "\n", line: 70, column: 28 }
+  353: Token { token_type: ForEach, lexeme: "forEach", line: 71, column: 4 }
+  354: Token { token_type: LeftParen, lexeme: "(", line: 71, column: 12 }
+  355: Token { token_type: IntType, lexeme: "int", line: 71, column: 13 }
+  356: Token { token_type: Identifier("value"), lexeme: "value", line: 71, column: 17 }
+  357: Token { token_type: In, lexeme: "in", line: 71, column: 23 }
+  358: Token { token_type: Identifier("data"), lexeme: "data", line: 71, column: 26 }
+  359: Token { token_type: RightParen, lexeme: ")", line: 71, column: 30 }
+  360: Token { token_type: LeftBrace, lexeme: "{", line: 71, column: 32 }
+  361: Token { token_type: Newline, lexeme: "\n", line: 71, column: 34 }
+  362: Token { token_type: If, lexeme: "if", line: 72, column: 8 }
+  363: Token { token_type: LeftParen, lexeme: "(", line: 72, column: 11 }
+  364: Token { token_type: Identifier("value"), lexeme: "value", line: 72, column: 12 }
+  365: Token { token_type: Greater, lexeme: ">", line: 72, column: 18 }
+  366: Token { token_type: IntLiteral(100), lexeme: "100", line: 72, column: 20 }
+  367: Token { token_type: RightParen, lexeme: ")", line: 72, column: 23 }
+  368: Token { token_type: LeftBrace, lexeme: "{", line: 72, column: 25 }
+  369: Token { token_type: Newline, lexeme: "\n", line: 72, column: 27 }
+  370: Token { token_type: Break, lexeme: "break", line: 73, column: 12 }
+  371: Token { token_type: If, lexeme: "if", line: 73, column: 18 }
+  372: Token { token_type: LeftParen, lexeme: "(", line: 73, column: 21 }
+  373: Token { token_type: Identifier("value"), lexeme: "value", line: 73, column: 22 }
+  374: Token { token_type: Greater, lexeme: ">", line: 73, column: 28 }
+  375: Token { token_type: IntLiteral(1000), lexeme: "1000", line: 73, column: 30 }
+  376: Token { token_type: RightParen, lexeme: ")", line: 73, column: 34 }
+  377: Token { token_type: Semicolon, lexeme: ";", line: 73, column: 35 }
+  378: Token { token_type: Newline, lexeme: "\n", line: 73, column: 37 }
+  379: Token { token_type: RightBrace, lexeme: "}", line: 74, column: 8 }
+  380: Token { token_type: Newline, lexeme: "\n", line: 74, column: 10 }
+  381: Token { token_type: RightBrace, lexeme: "}", line: 75, column: 4 }
+  382: Token { token_type: Newline, lexeme: "\n", line: 75, column: 6 }
+  383: Token { token_type: Newline, lexeme: "\n", line: 76, column: 5 }
+  384: Token { token_type: Newline, lexeme: "\n", line: 77, column: 36 }
+  385: Token { token_type: StringType, lexeme: "string", line: 78, column: 4 }
+  386: Token { token_type: Identifier("dataStr"), lexeme: "dataStr", line: 78, column: 11 }
+  387: Token { token_type: Assign, lexeme: "=", line: 78, column: 19 }
+  388: Token { token_type: Identifier("data"), lexeme: "data", line: 78, column: 21 }
+  389: Token { token_type: DoubleColon, lexeme: "::", line: 78, column: 25 }
+  390: Token { token_type: Identifier("toString"), lexeme: "toString", line: 78, column: 27 }
+  391: Token { token_type: LeftParen, lexeme: "(", line: 78, column: 35 }
+  392: Token { token_type: RightParen, lexeme: ")", line: 78, column: 36 }
+  393: Token { token_type: Semicolon, lexeme: ";", line: 78, column: 37 }
+  394: Token { token_type: Newline, lexeme: "\n", line: 78, column: 39 }
+  395: Token { token_type: RightBrace, lexeme: "}", line: 79, column: 0 }
+  396: Token { token_type: Newline, lexeme: "\n", line: 79, column: 2 }
+  397: Token { token_type: Newline, lexeme: "\n", line: 80, column: 1 }
+  398: Token { token_type: Newline, lexeme: "\n", line: 81, column: 48 }
+  399: Token { token_type: Func, lexeme: "func", line: 82, column: 0 }
+  400: Token { token_type: Identifier("main"), lexeme: "main", line: 82, column: 5 }
+  401: Token { token_type: LeftParen, lexeme: "(", line: 82, column: 9 }
+  402: Token { token_type: RightParen, lexeme: ")", line: 82, column: 10 }
+  403: Token { token_type: Arrow, lexeme: "->", line: 82, column: 12 }
+  404: Token { token_type: VoidType, lexeme: "void", line: 82, column: 15 }
+  405: Token { token_type: LeftBrace, lexeme: "{", line: 82, column: 20 }
+  406: Token { token_type: Newline, lexeme: "\n", line: 82, column: 22 }
+  407: Token { token_type: Newline, lexeme: "\n", line: 83, column: 29 }
+  408: Token { token_type: Identifier("createBuffers"), lexeme: "createBuffers", line: 84, column: 4 }
+  409: Token { token_type: LeftParen, lexeme: "(", line: 84, column: 17 }
+  410: Token { token_type: RightParen, lexeme: ")", line: 84, column: 18 }
+  411: Token { token_type: Semicolon, lexeme: ";", line: 84, column: 19 }
+  412: Token { token_type: Newline, lexeme: "\n", line: 84, column: 21 }
+  413: Token { token_type: Newline, lexeme: "\n", line: 85, column: 5 }
+  414: Token { token_type: Newline, lexeme: "\n", line: 86, column: 27 }
+  415: Token { token_type: Identifier("mathDemo"), lexeme: "mathDemo", line: 87, column: 4 }
+  416: Token { token_type: LeftParen, lexeme: "(", line: 87, column: 12 }
+  417: Token { token_type: RightParen, lexeme: ")", line: 87, column: 13 }
+  418: Token { token_type: Semicolon, lexeme: ";", line: 87, column: 14 }
+  419: Token { token_type: Newline, lexeme: "\n", line: 87, column: 16 }
+  420: Token { token_type: Newline, lexeme: "\n", line: 88, column: 5 }
+  421: Token { token_type: Newline, lexeme: "\n", line: 89, column: 28 }
+  422: Token { token_type: StringType, lexeme: "string", line: 90, column: 4 }
+  423: Token { token_type: Identifier("result"), lexeme: "result", line: 90, column: 11 }
+  424: Token { token_type: Assign, lexeme: "=", line: 90, column: 18 }
+  425: Token { token_type: Identifier("processText"), lexeme: "processText", line: 90, column: 20 }
+  426: Token { token_type: LeftParen, lexeme: "(", line: 90, column: 31 }
+  427: Token { token_type: StringLiteral("Hello Hydra Language!"), lexeme: "\"Hello Hydra Language!\"", line: 90, column: 32 }
+  428: Token { token_type: RightParen, lexeme: ")", line: 90, column: 55 }
+  429: Token { token_type: Semicolon, lexeme: ";", line: 90, column: 56 }
+  430: Token { token_type: Newline, lexeme: "\n", line: 90, column: 58 }
+  431: Token { token_type: Newline, lexeme: "\n", line: 91, column: 5 }
+  432: Token { token_type: Newline, lexeme: "\n", line: 92, column: 27 }
+  433: Token { token_type: IntType, lexeme: "int", line: 93, column: 4 }
+  434: Token { token_type: LeftBracket, lexeme: "[", line: 93, column: 7 }
+  435: Token { token_type: RightBracket, lexeme: "]", line: 93, column: 8 }
+  436: Token { token_type: Identifier("testData"), lexeme: "testData", line: 93, column: 10 }
+  437: Token { token_type: Assign, lexeme: "=", line: 93, column: 19 }
+  438: Token { token_type: LeftBrace, lexeme: "{", line: 93, column: 21 }
+  439: Token { token_type: IntLiteral(10), lexeme: "10", line: 93, column: 22 }
+  440: Token { token_type: Comma, lexeme: ",", line: 93, column: 24 }
+  441: Token { token_type: IntLiteral(50), lexeme: "50", line: 93, column: 26 }
+  442: Token { token_type: Comma, lexeme: ",", line: 93, column: 28 }
+  443: Token { token_type: IntLiteral(150), lexeme: "150", line: 93, column: 30 }
+  444: Token { token_type: Comma, lexeme: ",", line: 93, column: 33 }
+  445: Token { token_type: IntLiteral(500), lexeme: "500", line: 93, column: 35 }
+  446: Token { token_type: Comma, lexeme: ",", line: 93, column: 38 }
+  447: Token { token_type: IntLiteral(1500), lexeme: "1500", line: 93, column: 40 }
+  448: Token { token_type: RightBrace, lexeme: "}", line: 93, column: 44 }
+  449: Token { token_type: Semicolon, lexeme: ";", line: 93, column: 45 }
+  450: Token { token_type: Newline, lexeme: "\n", line: 93, column: 47 }
+  451: Token { token_type: Identifier("analyzeData"), lexeme: "analyzeData", line: 94, column: 4 }
+  452: Token { token_type: LeftParen, lexeme: "(", line: 94, column: 15 }
+  453: Token { token_type: Identifier("testData"), lexeme: "testData", line: 94, column: 16 }
+  454: Token { token_type: RightParen, lexeme: ")", line: 94, column: 24 }
+  455: Token { token_type: Semicolon, lexeme: ";", line: 94, column: 25 }
+  456: Token { token_type: Newline, lexeme: "\n", line: 94, column: 27 }
+  457: Token { token_type: Newline, lexeme: "\n", line: 95, column: 5 }
+  458: Token { token_type: Newline, lexeme: "\n", line: 96, column: 50 }
+  459: Token { token_type: IntType, lexeme: "int", line: 97, column: 4 }
+  460: Token { token_type: Identifier("size"), lexeme: "size", line: 97, column: 8 }
+  461: Token { token_type: Assign, lexeme: "=", line: 97, column: 13 }
+  462: Token { token_type: IntLiteral(5), lexeme: "5", line: 97, column: 15 }
+  463: Token { token_type: Semicolon, lexeme: ";", line: 97, column: 16 }
+  464: Token { token_type: Newline, lexeme: "\n", line: 97, column: 18 }
+  465: Token { token_type: FloatType, lexeme: "float", line: 98, column: 4 }
+  466: Token { token_type: LeftBracket, lexeme: "[", line: 98, column: 9 }
+  467: Token { token_type: RightBracket, lexeme: "]", line: 98, column: 10 }
+  468: Token { token_type: Identifier("dynamicArray"), lexeme: "dynamicArray", line: 98, column: 12 }
+  469: Token { token_type: Assign, lexeme: "=", line: 98, column: 25 }
+  470: Token { token_type: LeftBrace, lexeme: "{", line: 98, column: 27 }
+  471: Token { token_type: FloatType, lexeme: "float", line: 98, column: 28 }
+  472: Token { token_type: Comma, lexeme: ",", line: 98, column: 33 }
+  473: Token { token_type: Identifier("size"), lexeme: "size", line: 98, column: 35 }
+  474: Token { token_type: Multiply, lexeme: "*", line: 98, column: 40 }
+  475: Token { token_type: IntLiteral(2), lexeme: "2", line: 98, column: 42 }
+  476: Token { token_type: RightBrace, lexeme: "}", line: 98, column: 43 }
+  477: Token { token_type: Semicolon, lexeme: ";", line: 98, column: 44 }
+  478: Token { token_type: Newline, lexeme: "\n", line: 98, column: 77 }
+  479: Token { token_type: Newline, lexeme: "\n", line: 99, column: 5 }
+  480: Token { token_type: Newline, lexeme: "\n", line: 100, column: 40 }
+  481: Token { token_type: CharType, lexeme: "char", line: 101, column: 4 }
+  482: Token { token_type: LeftBracket, lexeme: "[", line: 101, column: 8 }
+  483: Token { token_type: RightBracket, lexeme: "]", line: 101, column: 9 }
+  484: Token { token_type: Identifier("validInit"), lexeme: "validInit", line: 101, column: 11 }
+  485: Token { token_type: Assign, lexeme: "=", line: 101, column: 21 }
+  486: Token { token_type: LeftBrace, lexeme: "{", line: 101, column: 23 }
+  487: Token { token_type: CharType, lexeme: "char", line: 101, column: 24 }
+  488: Token { token_type: Comma, lexeme: ",", line: 101, column: 28 }
+  489: Token { token_type: IntLiteral(10), lexeme: "10", line: 101, column: 30 }
+  490: Token { token_type: RightBrace, lexeme: "}", line: 101, column: 32 }
+  491: Token { token_type: Semicolon, lexeme: ";", line: 101, column: 33 }
+  492: Token { token_type: Newline, lexeme: "\n", line: 101, column: 74 }
+  493: Token { token_type: Newline, lexeme: "\n", line: 102, column: 78 }
+  494: Token { token_type: Newline, lexeme: "\n", line: 103, column: 81 }
+  495: Token { token_type: Newline, lexeme: "\n", line: 104, column: 5 }
+  496: Token { token_type: Newline, lexeme: "\n", line: 105, column: 48 }
+  497: Token { token_type: IntType, lexeme: "int", line: 106, column: 4 }
+  498: Token { token_type: Identifier("arrayLen"), lexeme: "arrayLen", line: 106, column: 8 }
+  499: Token { token_type: Assign, lexeme: "=", line: 106, column: 17 }
+  500: Token { token_type: Identifier("testData"), lexeme: "testData", line: 106, column: 19 }
+  501: Token { token_type: DoubleColon, lexeme: "::", line: 106, column: 27 }
+  502: Token { token_type: Identifier("length"), lexeme: "length", line: 106, column: 29 }
+  503: Token { token_type: LeftParen, lexeme: "(", line: 106, column: 35 }
+  504: Token { token_type: RightParen, lexeme: ")", line: 106, column: 36 }
+  505: Token { token_type: Semicolon, lexeme: ";", line: 106, column: 37 }
+  506: Token { token_type: Newline, lexeme: "\n", line: 106, column: 78 }
+  507: Token { token_type: Newline, lexeme: "\n", line: 107, column: 93 }
+  508: Token { token_type: Newline, lexeme: "\n", line: 108, column: 5 }
+  509: Token { token_type: Newline, lexeme: "\n", line: 109, column: 37 }
+  510: Token { token_type: StringType, lexeme: "string", line: 110, column: 4 }
+  511: Token { token_type: Identifier("name"), lexeme: "name", line: 110, column: 11 }
+  512: Token { token_type: Assign, lexeme: "=", line: 110, column: 16 }
+  513: Token { token_type: StringLiteral("Hydra"), lexeme: "\"Hydra\"", line: 110, column: 18 }
+  514: Token { token_type: Semicolon, lexeme: ";", line: 110, column: 25 }
+  515: Token { token_type: Newline, lexeme: "\n", line: 110, column: 27 }
+  516: Token { token_type: CharType, lexeme: "char", line: 111, column: 4 }
+  517: Token { token_type: LeftBracket, lexeme: "[", line: 111, column: 8 }
+  518: Token { token_type: RightBracket, lexeme: "]", line: 111, column: 9 }
+  519: Token { token_type: Identifier("nameChars"), lexeme: "nameChars", line: 111, column: 11 }
+  520: Token { token_type: Assign, lexeme: "=", line: 111, column: 21 }
+  521: Token { token_type: Identifier("name"), lexeme: "name", line: 111, column: 23 }
+  522: Token { token_type: DoubleColon, lexeme: "::", line: 111, column: 27 }
+  523: Token { token_type: Identifier("toCharArray"), lexeme: "toCharArray", line: 111, column: 29 }
+  524: Token { token_type: LeftParen, lexeme: "(", line: 111, column: 40 }
+  525: Token { token_type: RightParen, lexeme: ")", line: 111, column: 41 }
+  526: Token { token_type: Semicolon, lexeme: ";", line: 111, column: 42 }
+  527: Token { token_type: Newline, lexeme: "\n", line: 111, column: 84 }
+  528: Token { token_type: IntType, lexeme: "int", line: 112, column: 4 }
+  529: Token { token_type: Identifier("nameLength"), lexeme: "nameLength", line: 112, column: 8 }
+  530: Token { token_type: Assign, lexeme: "=", line: 112, column: 19 }
+  531: Token { token_type: Identifier("name"), lexeme: "name", line: 112, column: 21 }
+  532: Token { token_type: DoubleColon, lexeme: "::", line: 112, column: 25 }
+  533: Token { token_type: Identifier("length"), lexeme: "length", line: 112, column: 27 }
+  534: Token { token_type: LeftParen, lexeme: "(", line: 112, column: 33 }
+  535: Token { token_type: RightParen, lexeme: ")", line: 112, column: 34 }
+  536: Token { token_type: Semicolon, lexeme: ";", line: 112, column: 35 }
+  537: Token { token_type: Newline, lexeme: "\n", line: 112, column: 79 }
+  538: Token { token_type: Newline, lexeme: "\n", line: 113, column: 5 }
+  539: Token { token_type: Newline, lexeme: "\n", line: 114, column: 56 }
+  540: Token { token_type: Newline, lexeme: "\n", line: 115, column: 75 }
+  541: Token { token_type: RightBrace, lexeme: "}", line: 116, column: 0 }
+  542: Token { token_type: Eof, lexeme: "", line: 116, column: 1 }
+
+=== PHASE 2: SYNTAX ANALYSIS (PARSING) ===
+✅ Parsing successful!
+Program structure:
+  Imports: 4
+  Functions: 6
+  Global variables: 2
+
+📦 Import Summary:
+  1. wildcard import: stdlib::io
+  2. specific import: stdlib::string::toCharArray
+  3. wildcard import: stdlib::array
+  4. specific import: stdlib::math::sqrt
+
+=== ABSTRACT SYNTAX TREE (AST) SUMMARY ===
+📦 Imports:
+  1. stdlib::io (wildcard)
+  2. stdlib::string::toCharArray
+  3. stdlib::array (wildcard)
+  4. stdlib::math::sqrt
+
+  1. Global variable const int BUFFER_SIZE (initialized)
+  2. Global variable string APP_NAME (initialized)
+  3. Function 'createBuffers' -> void
+     Parameters: 0
+     Statements in body: 13
+     Statement breakdown:
+       Variable declarations: 13
+  4. Function 'logger' -> void (variadic)
+     Parameters: 2
+       1: string level
+       2: string format
+     Statements in body: 0
+  5. Function 'mathDemo' -> void
+     Parameters: 0
+     Statements in body: 4
+     Statement breakdown:
+       Variable declarations: 4
+  6. Function 'processText' -> string
+     Parameters: 1
+       1: string input
+     Statements in body: 2
+     Statement breakdown:
+       Variable declarations: 1
+       Return statements: 1
+  7. Function 'analyzeData' -> void
+     Parameters: 1
+       1: int[] data
+     Statements in body: 3
+     Statement breakdown:
+       If statements: 1
+       Variable declarations: 2
+       ForEach loops: 1
+       Break statements: 1
+  8. Function 'main' -> void
+     Parameters: 0
+     Statements in body: 12
+     Statement breakdown:
+       Variable declarations: 9
+       Expression statements: 3
+
+=== PHASE 3: SEMANTIC ANALYSIS & TYPE CHECKING ===
+🔍 Analyzing imports and namespaces...
+🔍 Validating array initializations...
+🔍 Checking method calls and transformations...
+
+💡 Helpful hints:

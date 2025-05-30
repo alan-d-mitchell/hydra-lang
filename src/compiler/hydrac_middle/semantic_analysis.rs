@@ -641,7 +641,8 @@ impl SemanticAnalyzer {
             }
             Expression::FormatString(format_expr) => {
                 // Validate format string structure
-                self.validate_format_string(&format_expr.format_string);
+                let (_, format_errors) = self.validate_format_string(&format_expr.format_string);
+                self.errors.extend(format_errors);
                 
                 // Analyze all arguments
                 for arg in &format_expr.arguments {
@@ -651,8 +652,9 @@ impl SemanticAnalyzer {
         }
     }
     
-    fn validate_format_string(&mut self, format_str: &str) -> Vec<FormatSpecifier> {
+    pub fn validate_format_string(&self, format_str: &str) -> (Vec<FormatSpecifier>, Vec<String>) {
         let mut specifiers = Vec::new();
+        let mut errors = Vec::new();
         let mut chars = format_str.chars().peekable();
         
         while let Some(ch) = chars.next() {
@@ -669,14 +671,14 @@ impl SemanticAnalyzer {
                         if let Some(spec) = FormatSpecifier::from_str(&spec_ch.to_string()) {
                             specifiers.push(spec);
                         } else {
-                            self.errors.push(format!("Unknown format specifier '%{}'", spec_ch));
+                            errors.push(format!("Unknown format specifier '%{}'", spec_ch));
                         }
                     }
                 }
             }
         }
         
-        specifiers
+        (specifiers, errors)
     }
 
     fn collect_symbols_in_scope(&self, scope: &Scope, symbols: &mut Vec<String>) {

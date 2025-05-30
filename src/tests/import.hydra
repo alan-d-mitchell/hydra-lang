@@ -1,4 +1,4 @@
-// Test file demonstrating new import and namespace features
+
 import stdlib::io;
 import stdlib::string::toCharArray;
 import stdlib::array;
@@ -42,7 +42,7 @@ func logger(string level, string format, ...) -> void {
 // Function using imported stdlib functions
 func mathDemo() -> void {
     float x = 16.0;
-    float sqrtResult = stdlib::math::sqrt(x);  // Namespaced function call
+    float sqrtResult = stdlib::math::sqrt(x);  // Namespaced function call -> LINE 48
     
     string message = "Computing square root";
     char[] messageChars = stdlib::string::toCharArray(message);

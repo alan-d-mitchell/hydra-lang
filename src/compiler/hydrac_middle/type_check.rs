@@ -312,7 +312,10 @@ impl<'a> TypeChecker<'a> {
     }
     
     fn check_format_string(&mut self, format_expr: &FormatStringExpr) {
-        let specifiers = self.analyzer.validate_format_string(&format_expr.format_string);
+        let (specifiers, format_errors) = self.analyzer.validate_format_string(&format_expr.format_string);
+        
+        // Add any format string parsing errors to our errors
+        self.errors.extend(format_errors);
         
         // Check that the number of arguments matches the number of specifiers
         if specifiers.len() != format_expr.arguments.len() {

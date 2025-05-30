@@ -15,10 +15,18 @@ impl Parser {
         let mut imports = Vec::new();
         let mut items = Vec::new();
         
+        // Skip any initial newlines
+        while !self.is_at_end() && self.check(&TokenType::Newline) {
+            self.advance();
+        }
+        
         // Parse imports first
-        while self.check(&TokenType::Import) && !self.is_at_end() {
+        while !self.is_at_end() && self.check(&TokenType::Import) {
             imports.push(self.parse_import()?);
-            self.skip_newlines();
+            // Skip newlines after each import
+            while !self.is_at_end() && self.check(&TokenType::Newline) {
+                self.advance();
+            }
         }
         
         // Parse rest of program
@@ -39,28 +47,27 @@ impl Parser {
         self.consume(&TokenType::Import, "Expected 'import'")?;
         
         let mut path = Vec::new();
-        let mut is_wildcard = false;
         
-        // Parse first identifier
-        let first_part = self.consume_identifier("Expected import path")?;
-        path.push(first_part);
+        // Parse first identifier (allow type keywords as identifiers in import paths)
+        let first_name = self.consume_identifier_or_type("Expected import path identifier")?;
+        path.push(first_name);
         
         // Parse remaining path segments with ::
         while self.check(&TokenType::DoubleColon) {
             self.advance(); // consume ::
-            let part = self.consume_identifier("Expected identifier after '::'")?;
-            path.push(part);
+            
+            let name = self.consume_identifier_or_type("Expected identifier after '::'")?;
+            path.push(name);
         }
         
-        // Check if this is a wildcard import (just the namespace without specific function)
-        // If we only have one part or the last part looks like a namespace, it's wildcard
-        is_wildcard = path.len() <= 2; // e.g., "stdlib" or "stdlib::io"
+        // Check if this is a wildcard import
+        let is_wildcard = path.len() <= 2;
         
         self.consume(&TokenType::Semicolon, "Expected ';' after import")?;
         
         Ok(ImportStmt { path, is_wildcard })
     }
-    
+        
     fn parse_item(&mut self) -> Result<Item, String> {
         if self.check(&TokenType::Global) {
             Ok(Item::GlobalVariable(self.parse_global_variable()?))
@@ -725,8 +732,8 @@ impl Parser {
                     // Parse the rest of the namespace path
                     let mut namespace = vec![name];
                     
-                    while !self.check(&TokenType::LeftParen) {
-                        let part = self.consume_identifier("Expected identifier in namespace path")?;
+                    while !self.check(&TokenType::LeftParen) && !self.is_at_end() {
+                        let part = self.consume_identifier_or_type("Expected identifier in namespace path")?;
                         namespace.push(part);
                         
                         if self.check(&TokenType::DoubleColon) {
@@ -917,6 +924,44 @@ impl Parser {
             Ok(name)
         } else {
             Err(format!("{} at line {}", message, self.peek().line))
+        }
+    }
+
+    fn consume_identifier_or_type(&mut self, message: &str) -> Result<String, String> {
+        match &self.peek().token_type {
+            TokenType::Identifier(name) => {
+                let name = name.clone();
+                self.advance();
+                Ok(name)
+            },
+            // Allow type keywords as identifiers in import paths
+            TokenType::IntType => {
+                self.advance();
+                Ok("int".to_string())
+            },
+            TokenType::StringType => {
+                self.advance();
+                Ok("string".to_string())
+            },
+            TokenType::CharType => {
+                self.advance();
+                Ok("char".to_string())
+            },
+            TokenType::FloatType => {
+                self.advance();
+                Ok("float".to_string())
+            },
+            TokenType::BooleanType => {
+                self.advance();
+                Ok("boolean".to_string())
+            },
+            TokenType::VoidType => {
+                self.advance();
+                Ok("void".to_string())
+            },
+            _ => {
+                Err(format!("{} at line {}, found {:?}", message, self.peek().line, self.peek().token_type))
+            }
         }
     }
 }
