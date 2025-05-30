@@ -83,12 +83,15 @@ variadic function support:
                                                     %c = char
                                                     %f = float
                                                     %b = boolean
+
                                                     if trying to print array
                                                     must turn into string first and 
                                                     then save that to a string var and print that 
                                                     or call ::toString in line
 
-                                                    ie. char[] new_name = name::toCharArray();
+                                                    ie. char[] new_name = name::toCharArray(); // NOTE: i dont know if this valid in my language 
+                                                                                                    how valid is to assign a new arr to a function call
+                                                                                                    that returns an arr of that same type?
                                                         stdout("%s\n", new_name::toString())
 
                                                         or
