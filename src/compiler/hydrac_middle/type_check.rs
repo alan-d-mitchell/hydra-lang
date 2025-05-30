@@ -257,13 +257,25 @@ impl<'a> TypeChecker<'a> {
 
         match binary_expr.operator {
             // Arithmetic operators
-            BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul | BinaryOperator::Div => {
+            BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul | BinaryOperator::Div | BinaryOperator::Mod => {
                 if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
-                    // Promote to float if either operand is float
-                    if matches!(left_type, Type::Float) || matches!(right_type, Type::Float) {
-                        Some(Type::Float)
-                    } else {
+                    // For modulo operation, ensure both operands are integers
+                    if matches!(binary_expr.operator, BinaryOperator::Mod) {
+                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
+                            self.errors.push(format!(
+                                "Modulo operation requires integer types, found {} and {}",
+                                left_type, right_type
+                            ));
+                            return None;
+                        }
                         Some(Type::Int)
+                    } else {
+                        // For other arithmetic operations, promote to float if either operand is float
+                        if matches!(left_type, Type::Float) || matches!(right_type, Type::Float) {
+                            Some(Type::Float)
+                        } else {
+                            Some(Type::Int)
+                        }
                     }
                 } else {
                     self.errors.push(format!(
@@ -333,8 +345,18 @@ impl<'a> TypeChecker<'a> {
                 }
             }
             BinaryOperator::AddAssign | BinaryOperator::SubAssign | 
-            BinaryOperator::MulAssign | BinaryOperator::DivAssign => {
+            BinaryOperator::MulAssign | BinaryOperator::DivAssign | BinaryOperator::ModAssign => {
                 if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
+                    // For modulo assignment, ensure both operands are integers
+                    if matches!(binary_expr.operator, BinaryOperator::ModAssign) {
+                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
+                            self.errors.push(format!(
+                                "Modulo assignment requires integer types, found {} and {}",
+                                left_type, right_type
+                            ));
+                            return None;
+                        }
+                    }
                     Some(left_type)
                 } else {
                     self.errors.push(format!(

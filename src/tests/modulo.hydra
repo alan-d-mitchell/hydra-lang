@@ -1,0 +1,27 @@
+global const int DIVISOR = 3;
+
+func testModulo(int x, int y) -> int {
+    int remainder = x % y;
+    return remainder;
+}
+
+func checkEvenOdd(int number) -> boolean {
+    return number % 2 == 0;
+}
+
+func main() -> void {
+    int a = 17;
+    int b = 5;
+    
+    int result = a % b;  // Should be 2
+    int funcResult = testModulo(20, 6);  // Should be 2
+    
+    boolean isEven = checkEvenOdd(10);  // Should be true
+    boolean isOdd = checkEvenOdd(7);    // Should be false
+    
+    // Test compound assignment with modulo
+    a %= 3;  // a becomes 17 % 3 = 2
+    
+    // Test with global constant
+    int globalMod = a % DIVISOR;  // 2 % 3 = 2
+}

@@ -1,0 +1,107 @@
+implement functionality for import
+
+stdlib namespacing:
+    import stdlib; // imports all of stdlib
+
+    or
+
+    import stdlib::array::toString; // imports toString from stdlib::array only
+
+parser implementation for empty array init:
+    int[] arr = {int, size} -> {int = type of element to init with, size = user given size, must be int}
+    type of element must match type of arr declared
+
+    char[] c = {string, 5} -> compiler throw hissy fit
+    char[] d = {char, 5} -> compiler give hug
+
+parser implementation for namespacing and import
+token for "::"
+    basically functions as the / in cd when you want to switch directories
+    just tells the compiler where to look for this file
+
+    import stdlib::array::char::isUpper; -> tells the compiler to look in the stdlib folder for the isUpper function in the char folder inside the array folder
+
+parser implementation (i think) for instantiation of namespaced methods:
+
+instead of:
+    import stdlib::string::toCharArray;
+
+    string name = "John Doe";
+
+    forEach (char c in string::toCharArray(name)) {
+        // do something
+    }
+
+    we do:
+        forEach (char c in name::toCharArray()) {
+            // do something
+        }
+    
+    we instantiate it without the OOP boilerplate of creating a new object or whatever happens
+
+semantic analysis for import:
+    - track whats imported in each file
+    - validate functions exist
+    - handle namespace conflicts
+    - resolve partial imports (import stdlib::string::toCharArray) vs full import (import stdlib)
+
+type checker for import:
+    - what methods are available for each type (toCharArray only available for string, etc etc)
+    - transform name::toCharArray() to string::toCharArray(name) -> var_name::toCharArray to string::toCharArray(var_name);
+        - generalized to transform var_name::method() to type::method(var_name)
+    - verify method exists for that type
+
+array init type checking:
+    char[] s = {string, 5} ->   error: string != char 
+                                more verbose error: cannot initialize char[] with string elements
+                                generalized verbose error: cannot initialize type[] with type elements
+    
+    int[] arr = {int, "5"} ->   error: "5" is not of type int
+                                more verbose error: size must be of type int
+                                generalized: cannot initialize type[] with size of type type
+
+track imported symbols:
+    which functions are available in current scope
+    handle 'import stdlib' vs partial import (import stdlib::stdout)
+    resolve function calls to correct namespace
+
+error messages:
+    unknown import: 'import stdlib::nonexistent::function' 
+    method not available: 'int_var::length()' -> ints do not have length
+    invalid array init: float[] octopi = {float, 3.14} -> size must be of type int
+
+variadic function support:
+    type checker and parser needs:
+        variadic parameter syntax: func stdout(string fmt, ...) -> void
+        format string validation:   string name = "John";
+                                    stdout("%d\n", name); -> string = %s
+        variadic call handling
+    
+    also need to add string formatting into parser (ie. recognize %d, %s, %c, %f, %b and what theyre used for)
+                                                    %d = int
+                                                    %s = string
+                                                    %c = char
+                                                    %f = float
+                                                    %b = boolean
+                                                    if trying to print array
+                                                    must turn into string first and 
+                                                    then save that to a string var and print that 
+                                                    or call ::toString in line
+
+                                                    ie. char[] new_name = name::toCharArray();
+                                                        stdout("%s\n", new_name::toString())
+
+                                                        or
+
+                                                        string name_str = new_name::toString();
+                                                        stdout("%s\n", name_str);
+
+import resolution:
+    split on "::"
+    build path:
+        import stdlib::io -> stdlib/io/
+    check if dir exists:
+        if exists -> import all files
+        not dir? try as file -> stdlib/io.hydra
+        neither exist? -> error: import not found
+    

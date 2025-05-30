@@ -821,12 +821,25 @@ impl SemanticAnalyzer {
         let right_type = self.infer_expression_type(&binary_expr.right)?;
 
         match binary_expr.operator {
-            BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul | BinaryOperator::Div => {
+            BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul | BinaryOperator::Div | BinaryOperator::Mod => {
                 if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
-                    if matches!(left_type, Type::Float) || matches!(right_type, Type::Float) {
-                        Some(Type::Float)
-                    } else {
+                    // For modulo operation, ensure both operands are integers
+                    if matches!(binary_expr.operator, BinaryOperator::Mod) {
+                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
+                            self.errors.push(format!(
+                                "Modulo operation requires integer types, found {} and {}",
+                                left_type, right_type
+                            ));
+                            return None;
+                        }
                         Some(Type::Int)
+                    } else {
+                        // For other arithmetic operations, allow float promotion
+                        if matches!(left_type, Type::Float) || matches!(right_type, Type::Float) {
+                            Some(Type::Float)
+                        } else {
+                            Some(Type::Int)
+                        }
                     }
                 } else {
                     self.errors.push(format!(
@@ -870,7 +883,40 @@ impl SemanticAnalyzer {
                     None
                 }
             }
-            _ => Some(left_type), // For assignments and other operators
+            BinaryOperator::Assign => {
+                if self.types_compatible(&left_type, &right_type) {
+                    Some(left_type)
+                } else {
+                    self.errors.push(format!(
+                        "Assignment type mismatch: {} = {}",
+                        left_type, right_type
+                    ));
+                    None
+                }
+            }
+            BinaryOperator::AddAssign | BinaryOperator::SubAssign | 
+            BinaryOperator::MulAssign | BinaryOperator::DivAssign | BinaryOperator::ModAssign => {
+                if self.is_numeric_type(&left_type) && self.is_numeric_type(&right_type) {
+                    // For modulo assignment, ensure both operands are integers
+                    if matches!(binary_expr.operator, BinaryOperator::ModAssign) {
+                        if !matches!(left_type, Type::Int) || !matches!(right_type, Type::Int) {
+                            self.errors.push(format!(
+                                "Modulo assignment requires integer types, found {} and {}",
+                                left_type, right_type
+                            ));
+                            return None;
+                        }
+                    }
+                    Some(left_type)
+                } else {
+                    self.errors.push(format!(
+                        "Compound assignment requires numeric types, found {} and {}",
+                        left_type, right_type
+                    ));
+                    None
+                }
+            }
+            _ => Some(left_type), // For other operators
         }
     }
 

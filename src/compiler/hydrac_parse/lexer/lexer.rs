@@ -123,6 +123,14 @@ impl Lexer {
                     Ok(Some((TokenType::Divide, c.to_string())))
                 }
             },
+            '%' => {
+                if self.match_char('=') {
+                    Ok(Some((TokenType::ModuloAssign, "%=".to_string())))
+                }
+                else {
+                    Ok(Some((TokenType::Modulo, c.to_string())))
+                }
+            }
             '=' => {
                 if self.match_char('=') {
                     Ok(Some((TokenType::Equal, "==".to_string())))

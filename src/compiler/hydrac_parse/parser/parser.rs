@@ -396,13 +396,14 @@ impl Parser {
         let expr = self.parse_logical_or()?;
         
         if self.match_any(&[TokenType::Assign, TokenType::PlusAssign, TokenType::MinusAssign, 
-                           TokenType::MultiplyAssign, TokenType::DivideAssign]) {
+                           TokenType::MultiplyAssign, TokenType::DivideAssign, TokenType::ModuloAssign]) {
             let operator = match self.previous().token_type {
                 TokenType::Assign => BinaryOperator::Assign,
                 TokenType::PlusAssign => BinaryOperator::AddAssign,
                 TokenType::MinusAssign => BinaryOperator::SubAssign,
                 TokenType::MultiplyAssign => BinaryOperator::MulAssign,
                 TokenType::DivideAssign => BinaryOperator::DivAssign,
+                TokenType::ModuloAssign => BinaryOperator::ModAssign,
                 _ => unreachable!(),
             };
             let right = self.parse_assignment()?; // Right-associative
@@ -535,10 +536,11 @@ impl Parser {
     fn parse_factor(&mut self) -> Result<Expression, String> {
         let mut expr = self.parse_unary()?;
         
-        while self.match_any(&[TokenType::Divide, TokenType::Multiply, TokenType::Power]) {
+        while self.match_any(&[TokenType::Divide, TokenType::Multiply, TokenType::Modulo, TokenType::Power]) {
             let operator = match self.previous().token_type {
                 TokenType::Divide => BinaryOperator::Div,
                 TokenType::Multiply => BinaryOperator::Mul,
+                TokenType::Modulo => BinaryOperator::Mod,
                 TokenType::Power => BinaryOperator::Pow,
                 _ => unreachable!(),
             };

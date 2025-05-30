@@ -55,6 +55,7 @@ pub enum TokenType {
     Minus,            // -
     Multiply,         // *
     Divide,           // /
+    Modulo,           // %
     Power,            // **
     Increment,        // ++
     Decrement,        // --
@@ -62,6 +63,7 @@ pub enum TokenType {
     MinusAssign,      // -=
     MultiplyAssign,   // *=
     DivideAssign,     // /=
+    ModuloAssign,     // %=
     And,              // &&
     Or,               // ||
     Not,              // !

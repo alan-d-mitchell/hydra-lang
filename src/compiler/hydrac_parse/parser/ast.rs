@@ -1,4 +1,3 @@
-
 use std::fmt;
 
 // ============================================================================
@@ -159,10 +158,10 @@ pub enum Literal {
 
 #[derive(Debug, Clone)]
 pub enum BinaryOperator {
-    Add, Sub, Mul, Div, Pow,
+    Add, Sub, Mul, Div, Mod, Pow,
     Equal, NotEqual, Less, LessEqual, Greater, GreaterEqual,
     And, Or,
-    Assign, AddAssign, SubAssign, MulAssign, DivAssign,
+    Assign, AddAssign, SubAssign, MulAssign, DivAssign, ModAssign,
     In,
 }
 
