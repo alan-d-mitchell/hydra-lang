@@ -1,0 +1,94 @@
+// Full spectrum of valid variable declarations
+
+let int_val: i32 = 42;
+let long_val: i64 = 1000000000000;
+let short_float: f32 = 3.14;
+let long_float: f64 = 2.7182818284;
+let letter: char = 'X';
+let greeting: string = "Welcome to Hydra!";
+let flag: boolean = true;
+let nothing: void = null; // assuming void variables can be assigned null
+let s: struct = null; // reserved keyword used correctly
+
+// Invalid (should throw error during parsing)
+let no_type = 10;
+
+// Array declarations
+let nums: [i32, 5] = {1, 2, 3, 4, 5};
+let flags: [boolean, 3] = {true, false, true};
+let chars: [char, 6] = {'H', 'y', 'd', 'r', 'a', '\n'};
+let empty: [i64, 10] = {}; // unknown values, defined size
+
+// Function declarations
+fn add(a: i32, b: i32) -> i32 {
+    return a + b;
+}
+
+fn bad_add(a: i32, b: i64) -> i64 {
+    return a + b; // Type mismatch: will throw parse-time error
+}
+
+fn greet(name: string) -> void {
+    println("Hello, " + name);
+}
+
+// Structs and generics
+struct Node<T> {
+    let value: T;
+    let next: &Node<T>?;
+}
+
+struct Wrapper<U> {
+    let item: U;
+}
+
+// Struct usage
+fn main() -> void {
+    let head: Node<i32> = Node<i32> {
+        value = 5;
+        next = null;
+    };
+
+    let wrapped: Wrapper<string> = Wrapper<string> {
+        item = "content";
+    };
+
+    // for loop classic
+    for (i: i32 = 0; i < 5; i++) {
+        println(i);
+    }
+
+    // forEach loop
+    let names: [string, 3] = {"Alice", "Bob", "Carol"};
+    forEach (name: string in names) {
+        println(name);
+    }
+
+    // if statements
+    if (head.value == 5) {
+        println("Head value is 5");
+    }
+
+    if flag {
+        println("Flag is true");
+    }
+
+    if (name is in names) {
+        println("Name found!");
+    }
+
+    // some logic
+    let result: boolean = true && false || true && (!false);
+
+    // tricky characters
+    let expr: string = "(x + y) * (z - 42) / 3.14";
+    let punct: string = "{}[]();:<>!=+-*/&&||==";
+}
+
+// Multiline comment test
+/*
+    Multi-line comment that
+    spans several lines,
+    includes tricky symbols like ; {} () // /*
+    and ends here.
+*/

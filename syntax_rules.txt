@@ -1,0 +1,122 @@
+simple var declaration
+
+var types:
+i32
+i64
+f32
+f64
+char
+string
+boolean
+void
+struct
+
+char delimited by single quotes
+string delimited by double
+
+array declaration {
+    known elements:
+        let arr: [i32, 5] = {1, 2, 3, 4, 5};
+    
+    unknown elements:
+        let unknown: [i32, 5] = {}; // this will tell the compiler that you have an empty array of 5 32 bit signed ints but dont yet know their values
+    
+    to set a value, use a for loop
+}
+
+let x: i32 = 10; // NOTE, VERY IMPORTANT NOTE: type annotation MUST BE present
+
+let x = 10 // this is bad and will throw an error when i get to parsing because no type
+
+let float: f64 = 3.1415926
+
+let name: string = "Hello"
+let hello: char = 'H'
+
+let array: [boolean, 2] = {true, false};
+let new: [char, 10] = {'A', 'l', 'a', 'n'};
+
+function declaration {
+    follows this structure:
+        fn <name>(<params> DONT FORGET TYPE) -> <return type> {
+            <code>
+        }
+    
+    implementation:
+        fn add(a: i32, b: i32) -> i32 {
+            return a + b;
+        }
+
+        fn add(a: i32, b: i64) -> i64 {     // This is bad because you cant convert from 32 bit to 64
+            return a + b;
+        }
+
+        // when adding two numbers the numbers must of the same type
+}
+
+struct declaration {
+    follows this structure:
+        
+        struct <name> {
+            <fields>
+        }
+    
+    implementation:
+        struct Node<T> { // T is generic type, can be replaced with anything
+            let value: T;
+            let next: &Node<T>? // lets the compiler know that next is a optional reference to node meaning it can be null or have a value
+        }
+
+        fn main() -> void {
+            let node: Node<i32> = Node<i32> {
+                value = 5;
+                next = null;
+            }
+        }
+}
+
+for loops {
+    
+    basic:
+        for (i: i32 = 0; i < 10; i++) {
+            // do something
+        }
+
+        let chars: [char, 5] = {'p', 'o', 'p', 'p', 'y'}
+        forEach (c: char in chars) {
+            // do something
+        }
+
+        forEach is for elem in iterable
+
+}
+
+if statements {
+    NOT ENFORCED BUT STRONGLY RECOMMENDED YOU USE PARANTHESES AROUND CONDITION
+
+    if (condition) {
+        // do something
+    }
+    // this is great, we love it
+
+    if condition {
+        // do something
+    }
+    // this is ok, we like it
+
+    the is keyword can be used here and in tandem with in
+
+    if (x is in y) {
+
+    }
+
+    it however can not be used to assert equality
+
+    if (x is y) { // BAD
+
+    }
+}
+
+logic gate stuff, pretty basic
+
+i think thats it

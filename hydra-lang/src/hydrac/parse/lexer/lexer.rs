@@ -66,6 +66,22 @@ impl<'a> Lexer<'a> {
             '{' => Some(TokenType::LeftBrace),
             '}' => Some(TokenType::RightBrace),
             ';' => Some(TokenType::Semicolon),
+            ':' => if self.match_char(':') {
+                Some(TokenType::DoubleColon)
+            } else {
+                Some(TokenType::Colon)
+            },
+            '&' => if self.match_char('&') {
+                Some(TokenType::And)
+            } else {
+                Some(TokenType::Reference)
+            },
+            '|' => if self.match_char('|') {
+                Some(TokenType::Or)
+            } else {
+                Some(TokenType::HeapPointerBar)
+            },
+            '?' => Some(TokenType::Optional),
             ',' => Some(TokenType::Comma),
             '+' => if self.match_char('=') {
                 Some(TokenType::PlusAssign)
@@ -85,6 +101,28 @@ impl<'a> Lexer<'a> {
                 while self.peek() != '\n' && !self.is_at_end() {
                     self.advance();
                 }
+
+                None
+            } else if self.match_char('*') {
+                // multi line comment, consume until '*/' or EOF
+                while !self.is_at_end() {
+                    if self.peek() == '*' && self.peek_next() == '/' {
+                        // consume '*' and '/'
+                        self.advance();
+                        self.advance();
+
+                        break;
+                    }
+                    else {
+                        if self.peek() == '\n' {
+                            self.line += 1;
+                            self.column = 0;
+                        }
+
+                        self.advance();
+                    }
+                }
+                
                 None
             } else {
                 Some(TokenType::Divide)

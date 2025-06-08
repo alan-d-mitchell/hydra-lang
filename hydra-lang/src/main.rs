@@ -1,6 +1,6 @@
 mod hydrac;
 
-use hydrac::parse::lexer::{Lexer, Token, TokenType};
+use hydrac::parse::lexer::Lexer;
 
 use std::env;
 use std::fs;

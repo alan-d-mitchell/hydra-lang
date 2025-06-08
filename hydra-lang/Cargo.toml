@@ -11,3 +11,10 @@ criterion = "0.5"
 [[bin]]
 name = "hydrac"
 path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[[bench]]
+name = "lexer_bench"
+harness = false
