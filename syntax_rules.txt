@@ -1,4 +1,6 @@
-simple var declaration
+simple var declaration {
+    let <name>: <type> = <value>;
+}
 
 var types:
 i32
@@ -38,7 +40,7 @@ let new: [char, 10] = {'A', 'l', 'a', 'n'};
 
 function declaration {
     follows this structure:
-        fn <name>(<params> DONT FORGET TYPE) -> <return type> {
+        fn <name>(<param: <type>>, <param: <type>>, ...) -> <return type> {
             <code>
         }
     
@@ -73,6 +75,14 @@ struct declaration {
                 next = null;
             }
         }
+
+        // when you need a field that is an optional fully owned struct you do as follows:
+        struct Node<T> {
+            let value: T;
+            let next: |Node<T>|? // '|Node|' lets the compiler know that Node is a heap pointer, similar to box in rust
+        }
+
+        // if you want a non referenced or heap pointer field just do it as you would any other
 }
 
 for loops {
