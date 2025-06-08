@@ -1,7 +1,0 @@
-func toString() -> string {
-
-}
-
-func main() -> void {
-    toString();
-}

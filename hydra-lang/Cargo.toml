@@ -2,10 +2,9 @@
 name = "hydra-lang"
 version = "0.1.0"
 edition = "2024"
-description = "A lexer and parser for the Hydra programming language"
 
 [dependencies]
 
 [[bin]]
-name = "hydra-parser"
+name = "hydrac"
 path = "src/main.rs"

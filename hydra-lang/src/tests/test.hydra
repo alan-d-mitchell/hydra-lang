@@ -1,0 +1,29 @@
+
+struct Node<T> {
+    let value: T;
+    let next: &Node<T>?; /* this means next is an optional reference to Node or a Node
+                            but if i were to do this:
+                            
+                            let next: Node<T>?;
+                            this means next is an optional self-owned Node
+                            bad cuz infinite memory no existo / infinite recursion
+
+                            in order for let next: Node<T>? to work,
+                            it would need to be wrapped in a heap allocated thingy
+                            that stores the pointer or 
+                            for short, heap allocated pointer
+                            like so:
+
+                            let next: |Node<T>|?
+                            '|' will be my equivalent of Box<T> in Rust
+                            */
+}
+
+fn main() -> void {
+    let node: Node<i32> = Node<i32> {
+        value = 5;
+        next = null;
+    }
+
+    // node ops
+}
