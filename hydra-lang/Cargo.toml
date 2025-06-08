@@ -5,6 +5,9 @@ edition = "2024"
 
 [dependencies]
 
+[dev-dependencies]
+criterion = "0.5"
+
 [[bin]]
 name = "hydrac"
 path = "src/main.rs"

@@ -94,9 +94,9 @@ pub enum TokenType {
 }
 
 #[derive(Debug, Clone)]
-pub struct Token {
+pub struct Token<'a> {
     pub token_type: TokenType,
-    pub lexeme: String,
+    pub lexeme: &'a str,
     pub line: usize,
     pub column: usize,
 }
