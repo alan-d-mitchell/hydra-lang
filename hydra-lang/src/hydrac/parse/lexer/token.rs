@@ -83,6 +83,7 @@ pub enum TokenType {
     HeapPointerBar,     // |
     Semicolon,
     Comma,
+    Dot,                // .
     Colon,              // :
     DoubleColon,        // ::
     Optional,           // ?

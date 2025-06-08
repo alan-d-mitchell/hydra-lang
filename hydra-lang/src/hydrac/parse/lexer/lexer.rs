@@ -61,11 +61,16 @@ impl<'a> Lexer<'a> {
         let c = self.advance();
 
         let result = match c {
+            '"' => return self.scan_string(),
+            '\'' => return self.scan_char(),
             '(' => Some(TokenType::LeftParen),
             ')' => Some(TokenType::RightParen),
             '{' => Some(TokenType::LeftBrace),
             '}' => Some(TokenType::RightBrace),
+            '[' => Some(TokenType::LeftBracket),
+            ']' => Some(TokenType::RightBracket),
             ';' => Some(TokenType::Semicolon),
+            '.' => Some(TokenType::Dot),
             ':' => if self.match_char(':') {
                 Some(TokenType::DoubleColon)
             } else {
@@ -204,9 +209,23 @@ impl<'a> Lexer<'a> {
 
     fn get_keyword_or_identifier(&self, text: &str) -> TokenType {
         match text {
+            "if" => TokenType::If,
+            "else if" => TokenType::ElseIf,
+            "else" => TokenType::Else,
+            "in" => TokenType::In,
+            "is" => TokenType::Is,
+            "break" => TokenType::Break,
+            "return" => TokenType::Return,
+            "skip" => TokenType::Skip,
+            "fn" => TokenType::Function,
+            "while" => TokenType::While,
+            "for" => TokenType::For,
+            "forEach" => TokenType::ForEach,
+            "Const" => TokenType::Const,
             "let" => TokenType::Let,
             "true" => TokenType::BoolLiteral(true),
             "false" => TokenType::BoolLiteral(false),
+            "null" => TokenType::Null,
             _ => TokenType::Identifier(text.to_string()),
         }
     }
@@ -260,6 +279,88 @@ impl<'a> Lexer<'a> {
                 _ => break,
             }
         }
+    }
+
+    fn scan_string(&mut self) -> Result<Option<TokenType>, String> {
+        let mut value = String::new();
+
+        while !self.is_at_end() {
+            let c = self.advance();
+
+            match c {
+                '"' => {
+                    return Ok(Some(TokenType::StringLiteral(value)));
+                }
+                '\\' => {
+                    let escaped = match self.advance() {
+                        'n' => '\n', // new line
+                        'r' => '\r', // move cursor to beginnning of line
+                        't' => '\t', // tab
+                        '"' => '"',
+                        '\\' => '\\',
+
+                        other => return Err(format!("Invalid escape sequence: '\\{}'", other)),
+                    };
+
+                    value.push(escaped);
+                }
+                '\n' => {
+                    self.line += 1;
+                    self.column = 0;
+
+                    value.push('\n');
+                }
+                _ => {
+                    value.push(c);
+                }
+            }
+        }
+
+        Err(format!(
+            "Unterminated string at line {}, column {}",
+            self.line, self.column
+        ))
+    }
+
+    fn scan_char(&mut self) -> Result<Option<TokenType>, String> {
+        if self.is_at_end() {
+            return Err(format!(
+                "Unterminated char at line {}, column {}",
+                self.line, self.column
+            ));
+        }
+
+        let c = match self.advance() {
+            '\\' => {
+                match self.advance() {
+                    'n' => '\n',
+                    'r' => '\r',
+                    't' => '\t',
+                    '\'' => '\'',
+                    '\\' => '\\',
+
+                    other => {
+                        return Err(format!(
+                            "Invalid escape sequence: '\\{}' at line {}, column {}",
+                            other, self.line, self.column
+                        ));
+                    }
+                }
+            }
+
+            other => other,
+        };
+
+        if self.peek() != '\'' {
+            return Err(format!(
+                "Unterminated or multi-character literal at line {}, column {}",
+                self.line, self.column
+            ));
+        }
+
+        self.advance(); // consume closing '
+        
+        Ok(Some(TokenType::CharLiteral(c)))
     }
 
     fn start_offset(&self) -> usize {
